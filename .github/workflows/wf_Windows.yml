@@ -16,12 +16,11 @@ on:
       - '**.md'
       - 'docs/**'
 permissions:
-  id-token: write # Require write permission to Fetch an OIDC token.
   contents: read
 jobs:
   test:
     name: Run Tests
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
