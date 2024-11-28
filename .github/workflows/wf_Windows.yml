@@ -34,8 +34,8 @@ jobs:
         Set-StrictMode -Version 3
 
         # Clone the source and dest repos down to temp.
-        git clone -b $env:GITHUB_REF_NAME "https://$API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/PSAppDeployToolkit.git" ($srcRepo = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())) 2>&1
-        git clone -b main "https://$API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git" ($dstRepo = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())) 2>&1
+        git clone -b $env:GITHUB_REF_NAME "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/PSAppDeployToolkit.git" ($srcRepo = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())) 2>&1
+        git clone -b main "https://$env:API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git" ($dstRepo = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())) 2>&1
 
         # Remove the current docs from the source.
         Remove-Item -Path "$dstRepo\docs\reference\functions\*" -Force -Confirm:$false
