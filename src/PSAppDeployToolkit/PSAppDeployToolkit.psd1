@@ -1,4 +1,4 @@
-﻿#
+#
 # Module manifest for module 'PSAppDeployToolkit'
 #
 # Generated on: 2024-04-13
@@ -189,6 +189,7 @@
         'Stop-ADTServiceAndDependencies'
         'Test-ADTBattery'
         'Test-ADTCallerIsAdmin'
+        'Test-ADTCompatibility'
         'Test-ADTMicrophoneInUse'
         'Test-ADTModuleInitialized'
         'Test-ADTMSUpdates'
