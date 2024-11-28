@@ -32,5 +32,6 @@ jobs:
         source-files: 'docs/'
         destination-username: 'PSAppDeployToolkit'
         destination-repository: 'website'
+        destination-branch: 'main'
         destination-directory: 'docs/reference/functions'
         commit-email: 'dancunningham@me.com'
