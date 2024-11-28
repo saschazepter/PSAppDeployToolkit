@@ -29,4 +29,17 @@ jobs:
       env:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
       run: |
-        Get-ChildItem -LiteralPath Microsoft.PowerShell.Core\Environment:: | Format-Table -AutoSize
+        # Clone the source and dest repos down to temp.
+        git clone -b $env:GITHUB_REF_NAME "https://$API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/PSAppDeployToolkit.git" ($srcRepo = [System.IO.Path]::GetTempFileName())
+        git clone -b main "https://$API_TOKEN_GITHUB@github.com/$env:GITHUB_REPOSITORY_OWNER/website.git" ($dstRepo = [System.IO.Path]::GetTempFileName())
+
+        # Remove the current docs from the source.
+        Remove-Item -Path "$dstRepo\docs\reference\functions\*" -Force -Confirm:$false
+        Copy-Item -Path "$srcRepo\docs\*.mdx" -Destination "$dstRepo\docs\reference\functions"
+
+        # Commit any changes if found.
+        if (git diff-index HEAD)
+        {
+          git commit -m "Commit of document changes from https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
+          git push origin
+        }
