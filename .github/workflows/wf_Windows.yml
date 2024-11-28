@@ -30,7 +30,7 @@ jobs:
         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
       with:
         source-files: 'docs/'
-        destination-username: 'dancunningham@me.com'
+        destination-username: 'PSAppDeployToolkit'
         destination-repository: 'website'
         destination-directory: 'docs/reference/functions'
         commit-email: 'dancunningham@me.com'
