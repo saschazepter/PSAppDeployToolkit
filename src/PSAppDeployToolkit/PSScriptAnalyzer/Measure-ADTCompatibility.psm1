@@ -306,8 +306,8 @@ function Measure-ADTCompatibility
                     'AddParameters' = { "-AdditionalArgumentList $_" }
                     'LogName' = { "-LogFileName $_" }
                     'FilterApplication' = {
-                        $filterApplication = @(if ($null -eq $boundParameters.FilterApplication.Value.Extent) { $null } else { Invoke-Expression $boundParameters.FilterApplication.Value.Extent })
-                        $excludeFromUninstall = @(if ($null -eq $boundParameters.ExcludeFromUninstall.Value.Extent) { $null } else { Invoke-Expression $boundParameters.ExcludeFromUninstall.Value.Extent })
+                        $filterApplication = @(if ($null -eq $boundParameters.FilterApplication.Value.Extent) { $null } else { $boundParameters.FilterApplication.Value.SafeGetValue() })
+                        $excludeFromUninstall = @(if ($null -eq $boundParameters.ExcludeFromUninstall.Value.Extent) { $null } else { $boundParameters.ExcludeFromUninstall.Value.SafeGetValue() })
 
                         $filterArray = $(
                             foreach ($item in $filterApplication)
@@ -383,8 +383,8 @@ function Measure-ADTCompatibility
                         }
                     }
                     'ExcludeFromUninstall' = {
-                        $filterApplication = @(if ($null -eq $boundParameters.FilterApplication.Value.Extent) { $null } else { Invoke-Expression $boundParameters.FilterApplication.Value.Extent })
-                        $excludeFromUninstall = @(if ($null -eq $boundParameters.ExcludeFromUninstall.Value.Extent) { $null } else { Invoke-Expression $boundParameters.ExcludeFromUninstall.Value.Extent })
+                        $filterApplication = @(if ($null -eq $boundParameters.FilterApplication.Value.Extent) { $null } else { $boundParameters.FilterApplication.Value.SafeGetValue() })
+                        $excludeFromUninstall = @(if ($null -eq $boundParameters.ExcludeFromUninstall.Value.Extent) { $null } else { $boundParameters.ExcludeFromUninstall.Value.SafeGetValue() })
 
                         $filterArray = $(
                             foreach ($item in $filterApplication)
