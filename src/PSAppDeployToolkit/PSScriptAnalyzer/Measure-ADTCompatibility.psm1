@@ -2,7 +2,7 @@
     .SYNOPSIS
     PSSCriptAnalyzer rules to check for usage of legacy PSAppDeployToolkit v3 commands or variables.
     .DESCRIPTION
-    Can be used directly with PSSCriptAnalyzer or via Test-ADTCompatibility and Convert-ADTDeploymentScript functions.
+    Can be used directly with PSSCriptAnalyzer or via Test-ADTCompatibility and Convert-ADTDeployment functions.
     .EXAMPLE
     Measure-ADTCompatibility -ScriptBlockAst $ScriptBlockAst
     .INPUTS

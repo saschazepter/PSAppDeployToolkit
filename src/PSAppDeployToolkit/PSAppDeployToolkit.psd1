@@ -1,4 +1,4 @@
-#
+﻿#
 # Module manifest for module 'PSAppDeployToolkit'
 #
 # Generated on: 2024-04-13
@@ -93,6 +93,7 @@
         'Close-ADTInstallationProgress'
         'Close-ADTSession'
         'Complete-ADTFunction'
+        'Convert-ADTDeployment'
         'Convert-ADTRegistryPath'
         'Convert-ADTValuesFromRemainingArguments'
         'ConvertTo-ADTNTAccountOrSID'
