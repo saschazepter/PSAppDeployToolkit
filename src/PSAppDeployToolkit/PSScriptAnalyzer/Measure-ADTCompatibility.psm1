@@ -310,69 +310,65 @@ function Measure-ADTCompatibility
                         $excludeFromUninstall = @(if ($null -eq $boundParameters.ExcludeFromUninstall.Value.Extent) { $null } else { Invoke-Expression $boundParameters.ExcludeFromUninstall.Value.Extent })
 
                         $filterArray = $(
-                            $filterApplication | & {
-                                process
+                            foreach ($item in $filterApplication)
+                            {
+                                if ($null -ne $item)
                                 {
-                                    if ($null -ne $_)
+                                    if ($item.Count -eq 1 -and $item[0].Count -eq 3) { $item = $item[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
+                                    if ($item[2] -eq 'RegEx')
                                     {
-                                        if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
-                                        if ($_[2] -eq 'RegEx')
+                                        "`$_.$($item[0]) -match '$($item[1] -replace "'","''")'"
+                                    }
+                                    elseif ($item[2] -eq 'Contains')
+                                    {
+                                        $regEx = [System.Text.RegularExpressions.Regex]::Escape(($item[1] -replace "'", "''")) -replace '(?<!\\)\\ ', ' '
+                                        "`$_.$($item[0]) -match '$regEx'"
+                                    }
+                                    elseif ($item[2] -eq 'WildCard')
+                                    {
+                                        "`$_.$($item[0]) -like '$($item[1] -replace "'","''")'"
+                                    }
+                                    elseif ($item[2] -eq 'Exact')
+                                    {
+                                        if ($item[1] -is [System.Boolean])
                                         {
-                                            "`$_.$($_[0]) -match '$($_[1] -replace "'","''")'"
+                                            "`$_.$($item[0]) -eq `$$($item[1].ToString().ToLower())"
                                         }
-                                        elseif ($_[2] -eq 'Contains')
+                                        else
                                         {
-                                            $regEx = [System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'", "''")) -replace '(?<!\\)\\ ', ' '
-                                            "`$_.$($_[0]) -match '$regEx'"
-                                        }
-                                        elseif ($_[2] -eq 'WildCard')
-                                        {
-                                            "`$_.$($_[0]) -like '$($_[1] -replace "'","''")'"
-                                        }
-                                        elseif ($_[2] -eq 'Exact')
-                                        {
-                                            if ($_[1] -is [System.Boolean])
-                                            {
-                                                "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
-                                            }
-                                            else
-                                            {
-                                                "`$_.$($_[0]) -eq '$($_[1] -replace "'","''")'"
-                                            }
+                                            "`$_.$($item[0]) -eq '$($item[1] -replace "'","''")'"
                                         }
                                     }
                                 }
                             }
-                            $excludeFromUninstall | & {
-                                process
+                            foreach ($item in $excludeFromUninstall)
+                            {
+                                if ($null -ne $item)
                                 {
-                                    if ($null -ne $_)
+                                    if ($item.Count -eq 1 -and $item[0].Count -eq 3) { $item = $item[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
+                                    if ($item[2] -eq 'RegEx')
                                     {
-                                        if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
-                                        if ($_[2] -eq 'RegEx')
-                                        {
-                                            "`$_.$($_[0]) -notmatch '$($_[1] -replace "'","''")'"
-                                        }
-                                        elseif ($_[2] -eq 'Contains')
-                                        {
-                                            $regEx = [System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'", "''")) -replace '(?<!\\)\\ ', ' '
-                                            "`$_.$($_[0]) -notmatch '$regEx'"
+                                        "`$_.$($item[0]) -notmatch '$($item[1] -replace "'","''")'"
+                                    }
+                                    elseif ($item[2] -eq 'Contains')
+                                    {
+                                        $regEx = [System.Text.RegularExpressions.Regex]::Escape(($item[1] -replace "'", "''")) -replace '(?<!\\)\\ ', ' '
+                                        "`$_.$($item[0]) -notmatch '$regEx'"
 
-                                        }
-                                        elseif ($_[2] -eq 'WildCard')
+                                    }
+                                    elseif ($item[2] -eq 'WildCard')
+                                    {
+                                        "`$_.$($item[0]) -notlike '$($item[1] -replace "'","''")'"
+                                    }
+                                    elseif ($item[2] -eq 'Exact')
+                                    {
+                                        if ($item[1] -is [System.Boolean])
                                         {
-                                            "`$_.$($_[0]) -notlike '$($_[1] -replace "'","''")'"
+                                            "`$_.$($item[0]) -ne `$$($item[1].ToString().ToLower())"
                                         }
-                                        elseif ($_[2] -eq 'Exact')
+                                        else
                                         {
-                                            if ($_[1] -is [System.Boolean])
-                                            {
-                                                "`$_.$($_[0]) -ne `$$($_[1].ToString().ToLower())"
-                                            }
-                                            else
-                                            {
-                                                "`$_.$($_[0]) -ne '$($_[1] -replace "'","''")'"
-                                            }
+                                            "`$_.$($item[0]) -ne '$($item[1] -replace "'","''")'"
                                         }
                                     }
                                 }
@@ -391,69 +387,65 @@ function Measure-ADTCompatibility
                         $excludeFromUninstall = @(if ($null -eq $boundParameters.ExcludeFromUninstall.Value.Extent) { $null } else { Invoke-Expression $boundParameters.ExcludeFromUninstall.Value.Extent })
 
                         $filterArray = $(
-                            $filterApplication | & {
-                                process
+                            foreach ($item in $filterApplication)
+                            {
+                                if ($null -ne $item)
                                 {
-                                    if ($null -ne $_)
+                                    if ($item.Count -eq 1 -and $item[0].Count -eq 3) { $item = $item[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
+                                    if ($item[2] -eq 'RegEx')
                                     {
-                                        if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
-                                        if ($_[2] -eq 'RegEx')
+                                        "`$_.$($item[0]) -match '$($item[1] -replace "'","''")'"
+                                    }
+                                    elseif ($item[2] -eq 'Contains')
+                                    {
+                                        $regEx = [System.Text.RegularExpressions.Regex]::Escape(($item[1] -replace "'", "''")) -replace '(?<!\\)\\ ', ' '
+                                        "`$_.$($item[0]) -match '$regEx'"
+                                    }
+                                    elseif ($item[2] -eq 'WildCard')
+                                    {
+                                        "`$_.$($item[0]) -like '$($item[1] -replace "'","''")'"
+                                    }
+                                    elseif ($item[2] -eq 'Exact')
+                                    {
+                                        if ($item[1] -is [System.Boolean])
                                         {
-                                            "`$_.$($_[0]) -match '$($_[1] -replace "'","''")'"
+                                            "`$_.$($item[0]) -eq `$$($item[1].ToString().ToLower())"
                                         }
-                                        elseif ($_[2] -eq 'Contains')
+                                        else
                                         {
-                                            $regEx = [System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'", "''")) -replace '(?<!\\)\\ ', ' '
-                                            "`$_.$($_[0]) -match '$regEx'"
-                                        }
-                                        elseif ($_[2] -eq 'WildCard')
-                                        {
-                                            "`$_.$($_[0]) -like '$($_[1] -replace "'","''")'"
-                                        }
-                                        elseif ($_[2] -eq 'Exact')
-                                        {
-                                            if ($_[1] -is [System.Boolean])
-                                            {
-                                                "`$_.$($_[0]) -eq `$$($_[1].ToString().ToLower())"
-                                            }
-                                            else
-                                            {
-                                                "`$_.$($_[0]) -eq '$($_[1] -replace "'","''")'"
-                                            }
+                                            "`$_.$($item[0]) -eq '$($item[1] -replace "'","''")'"
                                         }
                                     }
                                 }
                             }
-                            $excludeFromUninstall | & {
-                                process
+                            foreach ($item in $excludeFromUninstall)
+                            {
+                                if ($null -ne $item)
                                 {
-                                    if ($null -ne $_)
+                                    if ($item.Count -eq 1 -and $item[0].Count -eq 3) { $item = $item[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
+                                    if ($item[2] -eq 'RegEx')
                                     {
-                                        if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
-                                        if ($_[2] -eq 'RegEx')
-                                        {
-                                            "`$_.$($_[0]) -notmatch '$($_[1] -replace "'","''")'"
-                                        }
-                                        elseif ($_[2] -eq 'Contains')
-                                        {
-                                            $regEx = [System.Text.RegularExpressions.Regex]::Escape(($_[1] -replace "'", "''")) -replace '(?<!\\)\\ ', ' '
-                                            "`$_.$($_[0]) -notmatch '$regEx'"
+                                        "`$_.$($item[0]) -notmatch '$($item[1] -replace "'","''")'"
+                                    }
+                                    elseif ($item[2] -eq 'Contains')
+                                    {
+                                        $regEx = [System.Text.RegularExpressions.Regex]::Escape(($item[1] -replace "'", "''")) -replace '(?<!\\)\\ ', ' '
+                                        "`$_.$($item[0]) -notmatch '$regEx'"
 
-                                        }
-                                        elseif ($_[2] -eq 'WildCard')
+                                    }
+                                    elseif ($item[2] -eq 'WildCard')
+                                    {
+                                        "`$_.$($item[0]) -notlike '$($item[1] -replace "'","''")'"
+                                    }
+                                    elseif ($item[2] -eq 'Exact')
+                                    {
+                                        if ($item[1] -is [System.Boolean])
                                         {
-                                            "`$_.$($_[0]) -notlike '$($_[1] -replace "'","''")'"
+                                            "`$_.$($item[0]) -ne `$$($item[1].ToString().ToLower())"
                                         }
-                                        elseif ($_[2] -eq 'Exact')
+                                        else
                                         {
-                                            if ($_[1] -is [System.Boolean])
-                                            {
-                                                "`$_.$($_[0]) -ne `$$($_[1].ToString().ToLower())"
-                                            }
-                                            else
-                                            {
-                                                "`$_.$($_[0]) -ne '$($_[1] -replace "'","''")'"
-                                            }
+                                            "`$_.$($item[0]) -ne '$($item[1] -replace "'","''")'"
                                         }
                                     }
                                 }
