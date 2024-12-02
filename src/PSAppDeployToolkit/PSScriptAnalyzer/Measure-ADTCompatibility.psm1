@@ -15,7 +15,7 @@
 function Measure-ADTCompatibility
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord[]])]
+    [OutputType([Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord])]
     Param
     (
         [Parameter(Mandatory = $true)]
@@ -709,16 +709,14 @@ function Measure-ADTCompatibility
                     'Parameters' = { "-ArgumentList $_" }
                     'SecureParameters' = '-SecureArgumentList' # Should inspect switch values here in case of -Switch:$false
                     'IgnoreExitCodes' = { "-IgnoreExitCodes $($_.Trim('"').Trim("'") -split ',' -join ',')" }
-                    #'ExitOnProcessFailure' = { if ($_ -eq '$false') { '-NoExitOnProcessFailure' } }
-                    #'ContinueOnError' = { if ($_ -eq '$true') { '-ErrorAction SilentlyContinue' } else { '-ErrorAction Stop' } }
                     'ExitOnProcessFailure' = {
-                        $ContinueOnError = if ($null -eq $boundParameters.ContinueOnError.Value.Extent) { $false } else { Invoke-Expression $boundParameters.ContinueOnError.Value.Extent }
-                        $ExitOnProcessFailure = if ($null -eq $boundParameters.ExitOnProcessFailure.Value.Extent) { $true } else { Invoke-Expression $boundParameters.ExitOnProcessFailure.Value.Extent }
+                        $ContinueOnError = if ($null -eq $boundParameters.ContinueOnError.Value.Extent) { $false } else { $boundParameters.ContinueOnError.Value.SafeGetValue() }
+                        $ExitOnProcessFailure = if ($null -eq $boundParameters.ExitOnProcessFailure.Value.Extent) { $true } else { $boundParameters.ExitOnProcessFailure.Value.SafeGetValue() }
                         @('-ErrorAction Stop', '-ErrorAction SilentlyContinue')[$ContinueOnError -or !$ExitOnProcessFailure]
                     }
                     'ContinueOnError' = {
-                        $ContinueOnError = if ($null -eq $boundParameters.ContinueOnError.Value.Extent) { $false } else { Invoke-Expression $boundParameters.ContinueOnError.Value.Extent }
-                        $ExitOnProcessFailure = if ($null -eq $boundParameters.ExitOnProcessFailure.Value.Extent) { $true } else { Invoke-Expression $boundParameters.ExitOnProcessFailure.Value.Extent }
+                        $ContinueOnError = if ($null -eq $boundParameters.ContinueOnError.Value.Extent) { $false } else { $boundParameters.ContinueOnError.Value.SafeGetValue() }
+                        $ExitOnProcessFailure = if ($null -eq $boundParameters.ExitOnProcessFailure.Value.Extent) { $true } else { $boundParameters.ExitOnProcessFailure.Value.SafeGetValue() }
                         @('-ErrorAction Stop', '-ErrorAction SilentlyContinue')[$ContinueOnError -or !$ExitOnProcessFailure]
                     }
                 }
@@ -733,16 +731,14 @@ function Measure-ADTCompatibility
                     'SecureParameters' = '-SecureArgumentList' # Should inspect switch values here in case of -Switch:$false
                     'LogName' = { "-LogFileName $_" }
                     'IgnoreExitCodes' = { "-IgnoreExitCodes $($_.Trim('"').Trim("'") -split ',' -join ',')" }
-                    #'ExitOnProcessFailure' = { if ($_ -eq '$false') { '-NoExitOnProcessFailure' } }
-                    #'ContinueOnError' = { if ($_ -eq '$true') { '-ErrorAction SilentlyContinue' } else { '-ErrorAction Stop' } }
                     'ExitOnProcessFailure' = {
-                        $ContinueOnError = if ($null -eq $boundParameters.ContinueOnError.Value.Extent) { $false } else { Invoke-Expression $boundParameters.ContinueOnError.Value.Extent }
-                        $ExitOnProcessFailure = if ($null -eq $boundParameters.ExitOnProcessFailure.Value.Extent) { $true } else { Invoke-Expression $boundParameters.ExitOnProcessFailure.Value.Extent }
+                        $ContinueOnError = if ($null -eq $boundParameters.ContinueOnError.Value.Extent) { $false } else { $boundParameters.ContinueOnError.Value.SafeGetValue() }
+                        $ExitOnProcessFailure = if ($null -eq $boundParameters.ExitOnProcessFailure.Value.Extent) { $true } else { $boundParameters.ExitOnProcessFailure.Value.SafeGetValue() }
                         @('-ErrorAction Stop', '-ErrorAction SilentlyContinue')[$ContinueOnError -or !$ExitOnProcessFailure]
                     }
                     'ContinueOnError' = {
-                        $ContinueOnError = if ($null -eq $boundParameters.ContinueOnError.Value.Extent) { $false } else { Invoke-Expression $boundParameters.ContinueOnError.Value.Extent }
-                        $ExitOnProcessFailure = if ($null -eq $boundParameters.ExitOnProcessFailure.Value.Extent) { $true } else { Invoke-Expression $boundParameters.ExitOnProcessFailure.Value.Extent }
+                        $ContinueOnError = if ($null -eq $boundParameters.ContinueOnError.Value.Extent) { $false } else { $boundParameters.ContinueOnError.Value.SafeGetValue() }
+                        $ExitOnProcessFailure = if ($null -eq $boundParameters.ExitOnProcessFailure.Value.Extent) { $true } else { $boundParameters.ExitOnProcessFailure.Value.SafeGetValue() }
                         @('-ErrorAction Stop', '-ErrorAction SilentlyContinue')[$ContinueOnError -or !$ExitOnProcessFailure]
                     }
                 }
