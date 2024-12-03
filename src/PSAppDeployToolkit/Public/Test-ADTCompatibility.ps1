@@ -1,4 +1,5 @@
-﻿#-----------------------------------------------------------------------------
+﻿#Requires -Modules @{ ModuleName='PSScriptAnalyzer'; ModuleVersion='1.23.0' }
+#-----------------------------------------------------------------------------
 #
 # MARK: Test-ADTCompatibility
 #
@@ -46,6 +47,10 @@ function Test-ADTCompatibility
 
     .NOTES
         An active ADT session is NOT required to use this function.
+        Requires PSScriptAnalyzer module 1.23.0 or later. To install:
+
+        Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
+        Install-Module -Name PSScriptAnalyzer -Scope AllUsers
 
         Tags: psadt
         Website: https://psappdeploytoolkit.com
