@@ -5,6 +5,7 @@ using System.Security;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using System.Diagnostics;
 
 /// Some Native Method Declarations from:
 /// https://github.com/dahall/Vanara
@@ -287,7 +288,7 @@ namespace PSADT.PInvoke
         /// <param name="lpdwResult">Receives the result of the message processing.</param>
         /// <returns>The return value is the result of the message processing, which depends on the message sent.</returns>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, string? lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult);
+        public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam, string lParam, uint fuFlags, uint uTimeout, IntPtr lpdwResult);
 
         /// <summary>
         /// Notifies the system of an event that an application has performed.
@@ -540,7 +541,7 @@ namespace PSADT.PInvoke
         /// <returns>The return value is a handle to the current process.</returns>
         // HANDLE WINAPI GetCurrentProcess(void); https://msdn.microsoft.com/en-us/library/windows/desktop/ms683179(v=vs.85).aspx
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
-        public static extern IntPtr GetCurrentProcess();
+        public static extern SafeProcessHandle GetCurrentProcess();
 
         /// <summary>Converts a file time to system time format. System time is based on Coordinated Universal Time (UTC).</summary>
     	/// <param name="lpFileTime">
@@ -854,9 +855,9 @@ namespace PSADT.PInvoke
         // BOOL WINAPI IsWow64Process( _In_ HANDLE hProcess, _Out_ USHORT *pProcessMachine, _Out_opt_ USHORT *pNativeMachine); https://msdn.microsoft.com/en-us/library/windows/desktop/mt804318(v=vs.85).aspx
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool IsWow64Process2([In] IntPtr hProcess, out IMAGE_FILE_MACHINE pProcessMachine, out IMAGE_FILE_MACHINE pNativeMachine);
+        public static extern bool IsWow64Process2([In] SafeProcessHandle hProcess, out IMAGE_FILE_MACHINE pProcessMachine, out IMAGE_FILE_MACHINE pNativeMachine);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         public static extern SafeProcessHandle OpenProcess(
             uint dwDesiredAccess,
             [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle,
@@ -868,41 +869,9 @@ namespace PSADT.PInvoke
             SafeProcessHandle processHandle,
             [MarshalAs(UnmanagedType.Bool)] out bool wow64Process);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool ReadProcessMemory(
-            SafeProcessHandle hProcess,
-            long lpBaseAddress,
-            ref SafeHGlobalHandle lpBuffer,
-            int dwSize,
-            out int lpNumberOfBytesRead);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool ReadProcessMemory(
-            SafeProcessHandle hProcess,
-            long lpBaseAddress,
-            ref UNICODE_STRING lpBuffer,
-            int dwSize,
-            out int lpNumberOfBytesRead);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool ReadProcessMemory(
-            SafeProcessHandle hProcess,
-            long lpBaseAddress,
-            ref UNICODE_STRING_32 lpBuffer,
-            int dwSize,
-            out int lpNumberOfBytesRead);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool ReadProcessMemory(
-            SafeProcessHandle hProcess,
-            long lpBaseAddress,
-            [MarshalAs(UnmanagedType.LPWStr)] StringBuilder lpBuffer,
-            int dwSize,
-            out int lpNumberOfBytesRead);
+        public static extern bool ReadProcessMemory([In] SafeProcessHandle hProcess, [In] IntPtr lpBaseAddress, IntPtr lpBuffer, long nSize, out long lpNumberOfBytesRead);
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool QueryFullProcessImageName(
@@ -1442,56 +1411,32 @@ namespace PSADT.PInvoke
 
         #region PInvoke: ntdll.dll
 
-        [DllImport("ntdll.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [DllImport("ntdll.dll", SetLastError = false, CharSet = CharSet.Unicode)]
         public static extern NTSTATUS RtlGetVersion(out OSVERSIONINFOEX versionInfo);
 
-        [DllImport("ntdll.dll")]
+        [DllImport("ntdll.dll", SetLastError = false, ExactSpelling = true)]
         public static extern int NtQueryInformationProcess(
-            SafeProcessHandle ProcessHandle,
+            [In] SafeProcessHandle hProcess,
             PROCESSINFOCLASS ProcessInformationClass,
-            ref IntPtr ProcessInformation,
+            [Out] IntPtr ProcessInformation,
             uint ProcessInformationLength,
             out uint ReturnLength);
 
-        [DllImport("ntdll.dll")]
-        public static extern int NtQueryInformationProcess(
-            SafeProcessHandle ProcessHandle,
-            PROCESSINFOCLASS ProcessInformationClass,
-            ref PROCESS_BASIC_INFORMATION ProcessInformation,
-            uint ProcessInformationLength,
-            out uint ReturnLength);
-
-        [DllImport("ntdll.dll")]
+        [DllImport("ntdll.dll", SetLastError = false, ExactSpelling = true)]
         public static extern int NtWow64QueryInformationProcess64(
-            SafeProcessHandle ProcessHandle,
-            PROCESSINFOCLASS ProcessInformationClass,
-            ref PROCESS_BASIC_INFORMATION_WOW64 ProcessInformation,
-            uint ProcessInformationLength,
-            out uint ReturnLength);
+            [In] SafeProcessHandle hProcess,
+            PROCESSINFOCLASS processInformationClass,
+            IntPtr processInformation,
+            [In] ulong processInformationLength,
+            out ulong returnLength);
 
-        [DllImport("ntdll.dll")]
+        [DllImport("ntdll.dll", SetLastError = false, ExactSpelling = true)]
         public static extern int NtWow64ReadVirtualMemory64(
-            SafeProcessHandle ProcessHandle,
-            long BaseAddress,
-            ref long Buffer,
-            int Size,
-            out int NumberOfBytesRead);
-
-        [DllImport("ntdll.dll")]
-        public static extern int NtWow64ReadVirtualMemory64(
-            SafeProcessHandle ProcessHandle,
-            long BaseAddress,
-            ref UNICODE_STRING_WOW64 Buffer,
-            int Size,
-            out int NumberOfBytesRead);
-
-        [DllImport("ntdll.dll")]
-        public static extern int NtWow64ReadVirtualMemory64(
-            SafeProcessHandle ProcessHandle,
-            long BaseAddress,
-            StringBuilder Buffer,
-            int Size,
-            out int NumberOfBytesRead);
+            [In] SafeProcessHandle hProcess,
+            [In] long lpBaseAddress,
+            [Out] IntPtr lpBuffer,
+            [In] long nSize,
+            out long lpNumberOfBytesRead);
 
         #endregion
 
@@ -2045,16 +1990,16 @@ namespace PSADT.PInvoke
             uint nFiles,
             string[] rgsFilenames,
             uint nApplications,
-            [In] RM_UNIQUE_PROCESS[]? rgApplications,
+            [In] RM_UNIQUE_PROCESS[] rgApplications,
             uint nServices,
-            string[]? rgsServiceNames);
+            string[] rgsServiceNames);
 
         [DllImport("rstrtmgr.dll")]
         public static extern int RmGetList(
             uint dwSessionHandle,
             out uint pnProcInfoNeeded,
             ref uint pnProcInfo,
-            [In, Out] RM_PROCESS_INFO[]? rgAffectedApps,
+            [In, Out] RM_PROCESS_INFO[] rgAffectedApps,
             ref uint lpdwRebootReasons);
 
         #endregion

@@ -375,7 +375,7 @@ namespace PSADT.ProcessEx
         /// <param name="useLinkedAdminToken">If true, uses the linked admin token when available.</param>
         /// <param name="inheritEnvironment">Specifies whether to inherit the parent's environment variables.</param>
         /// <returns>The started ProcessEx object.</returns>
-        private static async Task<Process> StartProcessInSessionAsync(
+        private static async Task<System.Diagnostics.Process> StartProcessInSessionAsync(
             uint sessionId,
             ProcessStartInfo startInfo,
             CREATE_PROCESS processCreationFlags,
@@ -454,10 +454,10 @@ namespace PSADT.ProcessEx
                         }
                     }
 
-                    Process? process = null;
+                    System.Diagnostics.Process? process = null;
                     try
                     {
-                        process = Process.GetProcessById((int)processInfo.dwProcessId);
+                        process = System.Diagnostics.Process.GetProcessById((int)processInfo.dwProcessId);
 
                         // Only wait for input idle if it's a GUI application
                         if (isGuiApplication)
@@ -535,9 +535,9 @@ namespace PSADT.ProcessEx
         /// ConsoleHelper.DebugWrite($"ProcessEx started with ID {process.Id}");
         /// </code>
         /// </example>
-        private static async Task<Process> StartProcessAsync(ProcessStartInfo startInfo, bool isGuiApplication)
+        private static async Task<System.Diagnostics.Process> StartProcessAsync(ProcessStartInfo startInfo, bool isGuiApplication)
         {
-            var process = new Process
+            var process = new System.Diagnostics.Process
             {
                 StartInfo = startInfo,
                 EnableRaisingEvents = true

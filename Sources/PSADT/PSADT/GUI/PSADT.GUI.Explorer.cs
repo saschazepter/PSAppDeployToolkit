@@ -22,7 +22,7 @@ namespace PSADT.GUI
                 if (NativeMethods.SendMessageTimeout(NativeMethods.HWND_BROADCAST,
                                                      NativeMethods.WM_SETTINGCHANGE,
                                                      IntPtr.Zero,
-                                                     null,
+                                                     null!,
                                                      NativeMethods.SMTO_ABORTIFHUNG,
                                                      100,
                                                      IntPtr.Zero) == IntPtr.Zero)

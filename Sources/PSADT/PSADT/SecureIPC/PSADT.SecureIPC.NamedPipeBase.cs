@@ -356,7 +356,7 @@ namespace PSADT.SecureIPC
         {
             try
             {
-                Process process = Process.GetProcessById(processId);
+                System.Diagnostics.Process process = System.Diagnostics.Process.GetProcessById(processId);
                 using (process)
                 {
                     string processName = process.ProcessName.ToLowerInvariant();

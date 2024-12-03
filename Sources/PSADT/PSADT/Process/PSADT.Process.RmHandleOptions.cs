@@ -1,9 +1,9 @@
-namespace PSADT.ProcessUtilities
+namespace PSADT.Process
 {
     /// <summary>
     /// Options for controlling the behavior of GetLockingProcessesInfo.
     /// </summary>
-    public class LockingProcessesOptions
+    public class RmHandleOptions
     {
         /// <summary>
         /// If true, will recursively search subdirectories when checking a folder.

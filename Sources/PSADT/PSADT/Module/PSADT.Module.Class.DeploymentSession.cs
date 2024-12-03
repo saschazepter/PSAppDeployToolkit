@@ -1398,7 +1398,7 @@ namespace PSADT.Module
         /// <summary>
         /// Gets the current process ID.
         /// </summary>
-        private static readonly int PID = Process.GetCurrentProcess().Id;
+        private static readonly int PID = System.Diagnostics.Process.GetCurrentProcess().Id;
 
         /// <summary>
         /// Gets the session caller's username.

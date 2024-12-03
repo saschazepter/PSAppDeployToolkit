@@ -1169,20 +1169,42 @@ namespace PSADT.PInvoke
     public struct RM_UNIQUE_PROCESS
     {
         public int dwProcessId;
-        public System.Runtime.InteropServices.ComTypes.FILETIME ProcessStartTime;
+
+        public FILETIME ProcessStartTimeFT;
+        public long ProcessStartTimeLUtc => FileTimeToLong(ProcessStartTimeFT);
+        public DateTime ProcessStartTimeUtc => DateTime.FromFileTimeUtc(ProcessStartTimeLUtc);
+        public DateTime ProcessStartTimeLocal => DateTime.FromFileTime(ProcessStartTimeLUtc);
+
+        private static long FileTimeToLong(FILETIME fileTime)
+        {
+            // Combine the high and low parts into a ulong to avoid overflow
+            ulong fileTimeLong = ((ulong)fileTime.dwHighDateTime << 32) | (ulong)fileTime.dwLowDateTime;
+
+            // If the FILETIME is zero or invalid, return zero
+            if (fileTimeLong == 0 || fileTimeLong > (ulong)DateTime.MaxValue.ToFileTimeUtc())
+                return 0;
+
+            return (long)fileTimeLong;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct RM_PROCESS_INFO
     {
         public RM_UNIQUE_PROCESS Process;
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
         public string strAppName;
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
         public string strServiceShortName;
+
         public int ApplicationType;
+
         public uint AppStatus;
+
         public uint TSSessionId;
+
         [MarshalAs(UnmanagedType.Bool)]
         public bool bRestartable;
     }
