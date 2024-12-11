@@ -97,6 +97,7 @@ function Show-ADTInstallationRestartPrompt
     {
         # Initialize variables.
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        $adtStrings = Get-ADTStringTable
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -129,7 +130,6 @@ function Show-ADTInstallationRestartPrompt
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $adtStrings = Get-ADTStringTable
         $adtConfig = Get-ADTConfig
 
         # Set up DeploymentType if not specified.
@@ -139,7 +139,6 @@ function Show-ADTInstallationRestartPrompt
         }
 
         # Set up remainder if not specified.
-
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
