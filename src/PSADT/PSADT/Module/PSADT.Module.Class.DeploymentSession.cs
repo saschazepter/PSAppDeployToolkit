@@ -186,7 +186,7 @@ namespace PSADT.Module
 
                 // Ensure DeploymentType is title cased for aesthetics.
                 _deploymentType = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(_deploymentType.ToLower());
-                _deploymentTypeName = (string)((Hashtable)ADTStrings["DeploymentType"]!)[_deploymentType]!;
+                DeploymentTypeName = (string)((Hashtable)ADTStrings["DeploymentType"]!)[_deploymentType]!;
 
                 // Establish script directories.
                 if (!string.IsNullOrWhiteSpace(_scriptDirectory))
@@ -517,7 +517,7 @@ namespace PSADT.Module
 
                 // Open log file with commencement message.
                 WriteLogDivider(2);
-                WriteLogEntry($"[{_installName}] {_deploymentTypeName.ToLower()} started.");
+                WriteLogEntry($"[{_installName}] {DeploymentTypeName.ToLower()} started.");
 
 
                 #endregion
@@ -756,7 +756,7 @@ namespace PSADT.Module
 
 
                 // Check deployment type (install/uninstall).
-                WriteLogEntry($"Deployment type is [{_deploymentTypeName}].");
+                WriteLogEntry($"Deployment type is [{DeploymentTypeName}].");
 
 
                 #endregion
@@ -1333,15 +1333,6 @@ namespace PSADT.Module
         }
 
         /// <summary>
-        /// Gets the deployment type name.
-        /// </summary>
-        /// <returns>The deployment type name.</returns>
-        public string GetDeploymentTypeName()
-        {
-            return DeploymentTypeName;
-        }
-
-        /// <summary>
         /// Determines whether the origin is a runspace.
         /// </summary>
         /// <returns>True if the origin is a runspace; otherwise, false.</returns>
@@ -1512,6 +1503,11 @@ namespace PSADT.Module
         private string RegKeyDeferHistory { get; }
 
         /// <summary>
+        /// Gets the deployment type name from the language string table for the given DeploymentType.
+        /// </summary>
+        private string DeploymentTypeName { get; }
+
+        /// <summary>
         /// Gets whether this deployment session is in non-interactive mode.
         /// </summary>
         private bool DeployModeNonInteractive { get; }
@@ -1537,7 +1533,6 @@ namespace PSADT.Module
 
 
         private string _deploymentType { get; } = "Install";
-        private string _deploymentTypeName { get; }
         private string _deployMode { get; } = "Interactive";
         private SwitchParameter _allowRebootPassThru { get; }
         private SwitchParameter _terminalServerMode { get; }
@@ -1582,14 +1577,6 @@ namespace PSADT.Module
         public string DeploymentType
         {
             get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeploymentType)) : _deploymentType;
-        }
-
-        /// <summary>
-        /// Gets the deployment type name from the language string table for the given DeploymentType.
-        /// </summary>
-        public string DeploymentTypeName
-        {
-            get => (null != CallerSessionState) ? (string)CallerSessionState.PSVariable.GetValue(nameof(DeploymentTypeName)) : _deploymentTypeName;
         }
 
         /// <summary>
