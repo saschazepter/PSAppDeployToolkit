@@ -94,7 +94,7 @@ if (!$RuntimeAssembly)
         begin
         {
             # Determine whether we're on a network location.
-            $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or ((Get-CimInstance -ClassName Win32_LogicalDisk).ProviderName -match '^\\\\')
+            $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or ($_ -match '^([A-Za-z]:)\\' -and ((Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DeviceID='$($Matches[1])'").ProviderName -match '^\\\\'))
         }
 
         process
