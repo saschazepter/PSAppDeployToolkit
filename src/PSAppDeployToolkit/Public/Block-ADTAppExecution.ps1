@@ -109,7 +109,10 @@ function Block-ADTAppExecution
                         Action = New-ScheduledTaskAction -Execute $adtEnv.envPSProcessPath -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Unblock-ADTAppExecutionInternal'.ScriptBlock)} -TaskName '$($taskName.Replace("'", "''"))'")"
                         Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
                     }
-                    $null = New-ScheduledTask @nstParams | Register-ScheduledTask -TaskName $taskName
+                    if ($PSCmdlet.ShouldProcess($taskName, 'Register-ScheduledTask'))
+                    {
+                        $null = New-ScheduledTask @nstParams | Register-ScheduledTask -TaskName $taskName
+                    }
                 }
                 catch
                 {
