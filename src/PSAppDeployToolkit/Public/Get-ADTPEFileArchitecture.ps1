@@ -46,7 +46,7 @@ function Get-ADTPEFileArchitecture
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.IO.FileInfo])]
     [OutputType([PSADT.Shared.SystemArchitecture])]
     param

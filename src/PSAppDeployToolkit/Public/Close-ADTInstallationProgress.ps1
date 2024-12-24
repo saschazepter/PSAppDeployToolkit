@@ -40,7 +40,7 @@ function Close-ADTInstallationProgress
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
     )

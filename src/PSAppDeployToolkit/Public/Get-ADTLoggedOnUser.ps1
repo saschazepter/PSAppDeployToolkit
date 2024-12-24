@@ -85,7 +85,7 @@ function Get-ADTLoggedOnUser
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.Collections.ObjectModel.ReadOnlyCollection[PSADT.WTSSession.CompatibilitySessionInfo]])]
     param
     (

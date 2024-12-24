@@ -134,7 +134,7 @@ function Start-ADTMsiProcess
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.Int32])]
     param
     (

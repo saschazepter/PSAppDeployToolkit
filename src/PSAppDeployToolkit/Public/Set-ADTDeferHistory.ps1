@@ -52,7 +52,7 @@ function Set-ADTDeferHistory
 
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $false)]

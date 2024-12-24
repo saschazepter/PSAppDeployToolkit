@@ -40,7 +40,7 @@ function Update-ADTGroupPolicy
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
     )

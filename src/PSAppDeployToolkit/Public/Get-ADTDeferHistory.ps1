@@ -39,7 +39,7 @@ function Get-ADTDeferHistory
 
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
     )

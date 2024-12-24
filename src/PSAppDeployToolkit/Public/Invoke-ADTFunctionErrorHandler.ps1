@@ -66,7 +66,7 @@ function Invoke-ADTFunctionErrorHandler
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'None')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'None')]
     [OutputType([System.Management.Automation.ErrorRecord])]
     param
     (

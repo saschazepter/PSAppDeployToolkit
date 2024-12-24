@@ -62,7 +62,7 @@ function Test-ADTBattery
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([PSADT.Types.BatteryInfo])]
     param
     (

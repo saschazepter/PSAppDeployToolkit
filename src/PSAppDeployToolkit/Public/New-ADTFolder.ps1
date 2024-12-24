@@ -43,7 +43,7 @@ function New-ADTFolder
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding(SupportsShouldProcess = $false)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]

@@ -118,7 +118,7 @@ function Start-ADTProcess
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([PSADT.Types.ProcessResult])]
     [OutputType([PSADT.Types.ProcessInfo])]
     param

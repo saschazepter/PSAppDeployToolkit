@@ -53,7 +53,7 @@ function Block-ADTAppExecution
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]

@@ -59,7 +59,7 @@ function New-ADTZipFile
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]

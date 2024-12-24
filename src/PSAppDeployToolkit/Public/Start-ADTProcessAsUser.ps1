@@ -104,7 +104,7 @@ function Start-ADTProcessAsUser
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'PrimaryActiveUserSession')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'PrimaryActiveUserSession')]
     [OutputType([System.Threading.Tasks.Task[System.Int32]])]
     param
     (

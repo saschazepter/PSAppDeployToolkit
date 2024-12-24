@@ -47,7 +47,7 @@ function Get-ADTObjectProperty
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]

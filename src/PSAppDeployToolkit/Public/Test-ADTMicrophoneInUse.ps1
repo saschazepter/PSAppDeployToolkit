@@ -40,7 +40,7 @@ function Test-ADTMicrophoneInUse
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.Boolean])]
     param
     (

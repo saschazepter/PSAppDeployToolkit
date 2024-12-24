@@ -62,7 +62,7 @@ function Get-ADTPendingReboot
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([PSADT.Types.RebootInfo])]
     param
     (

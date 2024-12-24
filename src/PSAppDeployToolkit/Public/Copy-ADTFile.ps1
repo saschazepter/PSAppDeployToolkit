@@ -79,7 +79,7 @@ function Copy-ADTFile
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding(SupportsShouldProcess = $false)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]

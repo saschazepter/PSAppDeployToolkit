@@ -46,7 +46,7 @@ function Initialize-ADTFunction
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -62,7 +62,7 @@ function Initialize-ADTFunction
     function Set-CallerVariable
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
-        [CmdletBinding(SupportsShouldProcess = $false)]
+        [CmdletBinding()]
         param
         (
             [Parameter(Mandatory = $true)]

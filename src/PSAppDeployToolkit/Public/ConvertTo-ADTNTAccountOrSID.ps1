@@ -76,7 +76,7 @@ function ConvertTo-ADTNTAccountOrSID
 
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.Security.Principal.SecurityIdentifier])]
     param
     (

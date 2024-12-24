@@ -64,8 +64,7 @@ function New-ADTMsiTransform
         https://psappdeploytoolkit.com
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
-    [CmdletBinding(SupportsShouldProcess = $false)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]

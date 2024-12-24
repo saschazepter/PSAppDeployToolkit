@@ -44,7 +44,7 @@ function Convert-ADTValuesFromRemainingArguments
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.Collections.Generic.Dictionary[System.String, System.Object]])]
     param
     (

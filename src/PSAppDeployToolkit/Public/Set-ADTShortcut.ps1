@@ -67,7 +67,7 @@ function Set-ADTShortcut
         License: https://opensource.org/license/lgpl-3-0
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]

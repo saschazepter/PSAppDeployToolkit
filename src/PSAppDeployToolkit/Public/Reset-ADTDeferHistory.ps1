@@ -39,7 +39,7 @@ function Reset-ADTDeferHistory
 
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
     )

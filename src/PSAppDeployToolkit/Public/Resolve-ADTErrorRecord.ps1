@@ -75,7 +75,7 @@ function Resolve-ADTErrorRecord
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.String])]
     param
     (
@@ -111,7 +111,7 @@ function Resolve-ADTErrorRecord
         filter Get-ErrorPropertyNames
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = "This function is appropriately named and we don't need PSScriptAnalyzer telling us otherwise.")]
-            [CmdletBinding()]
+            [CmdletBinding(SupportsShouldProcess = $true)]
             param
             (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true)]

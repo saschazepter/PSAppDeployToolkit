@@ -59,7 +59,7 @@ function Invoke-ADTObjectMethod
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'Positional')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Positional')]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]

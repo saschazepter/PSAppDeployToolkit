@@ -73,7 +73,7 @@ function Write-ADTLogEntry
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.Collections.Specialized.StringCollection])]
     param
     (

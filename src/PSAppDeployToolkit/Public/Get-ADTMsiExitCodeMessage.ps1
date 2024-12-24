@@ -44,7 +44,7 @@ function Get-ADTMsiExitCodeMessage
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.String])]
     param
     (

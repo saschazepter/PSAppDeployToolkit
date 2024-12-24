@@ -54,7 +54,7 @@ function Get-ADTShortcut
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([PSADT.Types.ShortcutUrl])]
     [OutputType([PSADT.Types.ShortcutLnk])]
     param

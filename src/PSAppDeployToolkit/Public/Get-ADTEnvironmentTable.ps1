@@ -40,7 +40,7 @@ function Get-ADTEnvironmentTable
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
     )

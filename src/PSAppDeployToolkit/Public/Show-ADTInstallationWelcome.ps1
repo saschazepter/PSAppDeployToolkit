@@ -155,7 +155,7 @@ function Show-ADTInstallationWelcome
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'Interactive')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Interactive')]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'InteractiveCloseProcesses', HelpMessage = 'Specify process names and an optional process description, e.g. @{ Name = "winword"; Description = "Microsoft Word"}')]

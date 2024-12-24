@@ -70,7 +70,7 @@ function Get-ADTMsiTableProperty
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'TableInfo')]
     [OutputType([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Object]])]
     [OutputType([PSADT.Types.MsiSummaryInfo])]
     param

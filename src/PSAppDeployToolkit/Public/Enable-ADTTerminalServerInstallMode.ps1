@@ -40,7 +40,7 @@ function Enable-ADTTerminalServerInstallMode
         https://psappdeploytoolkit.com
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
     )
