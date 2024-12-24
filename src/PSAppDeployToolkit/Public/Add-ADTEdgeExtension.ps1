@@ -112,7 +112,10 @@ function Add-ADTEdgeExtension
                     ConvertTo-Json -Compress
 
                 # Add the additional extension to the current values, then re-write the definition in the registry.
-                $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value $extensionsSettings
+                if ($PSCmdlet.ShouldProcess('HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionSettings', 'Set-ADTRegistryKey'))
+                {
+                    Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value $extensionsSettings
+                }
             }
             catch
             {
