@@ -54,7 +54,10 @@ function Add-ADTSessionOpeningCallback
     # Send it off to the backend function.
     try
     {
-        Invoke-ADTSessionCallbackOperation -Type Opening -Action Add @PSBoundParameters
+        if ($PSCmdlet.ShouldProcess($Callback, 'Invoke-ADTSessionCallbackOperation -Type Opening -Action Add'))
+        {
+            Invoke-ADTSessionCallbackOperation -Type Opening -Action Add @PSBoundParameters
+        }
     }
     catch
     {

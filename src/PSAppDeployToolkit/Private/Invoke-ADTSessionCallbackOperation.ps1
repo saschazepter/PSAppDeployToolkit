@@ -7,7 +7,7 @@
 function Invoke-ADTSessionCallbackOperation
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Action', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true)]
@@ -25,5 +25,5 @@ function Invoke-ADTSessionCallbackOperation
 
     # Cache the global callbacks and perform any required action.
     $callbacks = $Script:ADT.Callbacks.$Type
-    $null = $Callback | & { process { if ($Action.Equals('Remove') -or !$callbacks.Contains($_)) { $callbacks.$Action($_) } } }
+    $null = $Callback | & { process { if (($Action.Equals('Remove') -or !$callbacks.Contains($_)) -and $PSCmdlet.ShouldProcess($_, "$Type.$Action()")) { $callbacks.$Action($_) } } }
 }

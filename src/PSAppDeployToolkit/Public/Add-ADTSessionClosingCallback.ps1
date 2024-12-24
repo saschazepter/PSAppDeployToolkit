@@ -54,7 +54,10 @@ function Add-ADTSessionClosingCallback
     # Send it off to the backend function.
     try
     {
-        Invoke-ADTSessionCallbackOperation -Type Closing -Action Add @PSBoundParameters
+        if ($PSCmdlet.ShouldProcess($Callback, 'Invoke-ADTSessionCallbackOperation -Type Closing -Action Add'))
+        {
+            Invoke-ADTSessionCallbackOperation -Type Closing -Action Add @PSBoundParameters
+        }
     }
     catch
     {

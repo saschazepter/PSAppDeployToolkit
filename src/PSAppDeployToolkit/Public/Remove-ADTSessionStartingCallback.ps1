@@ -54,7 +54,10 @@ function Remove-ADTSessionStartingCallback
     # Send it off to the backend function.
     try
     {
-        Invoke-ADTSessionCallbackOperation -Type Starting -Action Remove @PSBoundParameters
+        if ($PSCmdlet.ShouldProcess($Callback, 'Invoke-ADTSessionCallbackOperation -Type Starting -Action Remove'))
+        {
+            Invoke-ADTSessionCallbackOperation -Type Starting -Action Remove @PSBoundParameters
+        }
     }
     catch
     {
