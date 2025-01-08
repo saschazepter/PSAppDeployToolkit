@@ -149,9 +149,10 @@ function Write-ADTLogEntry
             return
         }
 
-        # If we don't have an active session, write the message to the verbose stream (4).
+        # Process the accumulated messages.
         if (Test-ADTSessionActive)
         {
+            # We're in the middle of an active deployment.
             (Get-ADTSession).WriteLogEntry(
                 $messages,
                 $DebugMessage,
@@ -164,8 +165,25 @@ function Write-ADTLogEntry
                 $null
             )
         }
+        elseif ($Script:ADT.Async.LogFileDirectory -and $Script:ADT.Async.LogFileName -and $Script:ADT.Async.LogStyle)
+        {
+            # We're performing an async operation.
+            [PSADT.Module.LoggingUtilities]::WriteLogEntry(
+                $messages,
+                [PSADT.Module.HostLogStream]::Host,
+                $DebugMessage,
+                $Severity,
+                $(if ($PSBoundParameters.ContainsKey('Source')) { $Source }),
+                $Script:ADT.Async.ScriptSection,
+                $Script:ADT.Async.LogFileDirectory,
+                $Script:ADT.Async.LogFileName,
+                $Script:ADT.Async.LogStyle
+            )
+        }
         elseif (!$DebugMessage)
         {
+            # We're using the module normally without an active session, log to the verbose stream.
+            # If we're logging to file in this mode and the caller hasn't provided a LogStyle, initialise the module so we can get it from the config.
             if ($PSBoundParameters.ContainsKey('LogFileDirectory') -and $PSBoundParameters.ContainsKey('LogFileName') -and !$PSBoundParameters.ContainsKey('LogType') -and !(Test-ADTModuleInitialized))
             {
                 Initialize-ADTModule

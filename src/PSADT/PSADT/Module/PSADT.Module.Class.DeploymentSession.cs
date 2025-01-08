@@ -1188,6 +1188,14 @@ namespace PSADT.Module
             ExitCode = exitCode;
         }
 
+        /// <summary>
+        /// Gets the log file path.
+        /// </summary>
+        public DirectoryInfo GetLogPath()
+        {
+            return new DirectoryInfo(LogPath);
+        }
+
 
         #endregion
         #region Internal variables.

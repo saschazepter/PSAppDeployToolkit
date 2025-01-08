@@ -42,6 +42,12 @@ try
                 ModuleImport = $null
                 ModuleInit = $null
             }
+            Async = [pscustomobject]@{
+                ScriptSection = 'Asynchronous'
+                LogFileDirectory = $null
+                LogFileName = $null
+                LogStyle = $null
+            }
             Sessions = $null
             SessionState = $ExecutionContext.SessionState
             TerminalServerMode = $false
