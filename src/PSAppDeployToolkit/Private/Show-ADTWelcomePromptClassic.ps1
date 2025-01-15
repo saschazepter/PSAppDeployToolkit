@@ -86,9 +86,9 @@ function Show-ADTWelcomePromptClassic
     $persistWindow = $false
 
     # Initial form layout: Close Applications
-    if ($WelcomeState.RunningProcessDescriptions)
+    if ($WelcomeState.RunningAppDescriptions)
     {
-        Write-ADTLogEntry -Message "Prompting the user to close application(s) [$($WelcomeState.RunningProcessDescriptions -join ',')]..."
+        Write-ADTLogEntry -Message "Prompting the user to close application(s) [$($WelcomeState.RunningAppDescriptions -join ',')]..."
         $showCloseProcesses = $true
     }
 
@@ -148,7 +148,7 @@ function Show-ADTWelcomePromptClassic
     $formWelcome_FormClosed = {
         $WelcomeState.WelcomeTimer.remove_Tick($welcomeTimer_Tick)
         $welcomeTimerPersist.remove_Tick($welcomeTimerPersist_Tick)
-        $timerRunningProcesses.remove_Tick($timerRunningProcesses_Tick)
+        $timerRunningApps.remove_Tick($timerRunningApps_Tick)
         $formWelcome.remove_Load($formWelcome_Load)
         $formWelcome.remove_FormClosed($formWelcome_FormClosed)
     }
@@ -231,34 +231,34 @@ function Show-ADTWelcomePromptClassic
         $formWelcome.Location = $WelcomeState.FormStartLocation
         $formWelcome.BringToFront()
     }
-    $timerRunningProcesses_Tick = {
+    $timerRunningApps_Tick = {
         # Grab current list of running processes.
-        $dynamicRunningProcesses = Get-ADTRunningProcesses -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue
-        $dynamicRunningProcessDescriptions = $dynamicRunningProcesses | Select-Object -ExpandProperty ProcessDescription | Sort-Object -Unique
-        $previousRunningProcessDescriptions = $WelcomeState.RunningProcessDescriptions
+        $dynamicRunningApps = Get-ADTRunningApplications -ProcessObjects $ProcessObjects -InformationAction SilentlyContinue
+        $dynamicRunningAppDescriptions = $dynamicRunningApps | Select-Object -ExpandProperty Description | Sort-Object -Unique
+        $previousRunningAppDescriptions = $WelcomeState.RunningAppDescriptions
 
         # Check the previous list against what's currently running.
-        if (Compare-Object -ReferenceObject @($WelcomeState.RunningProcessDescriptions | Select-Object) -DifferenceObject @($dynamicRunningProcessDescriptions | Select-Object))
+        if (Compare-Object -ReferenceObject @($WelcomeState.RunningAppDescriptions | Select-Object) -DifferenceObject @($dynamicRunningAppDescriptions | Select-Object))
         {
-            # Update the runningProcessDescriptions variable for the next time this function runs.
+            # Update the runningAppDescriptions variable for the next time this function runs.
             $listboxCloseProcesses.Items.Clear()
-            if (($WelcomeState.RunningProcessDescriptions = $dynamicRunningProcessDescriptions))
+            if (($WelcomeState.RunningAppDescriptions = $dynamicRunningAppDescriptions))
             {
-                Write-ADTLogEntry -Message "The running processes have changed. Updating the apps to close: [$($WelcomeState.RunningProcessDescriptions -join ',')]..."
-                $listboxCloseProcesses.Items.AddRange($WelcomeState.RunningProcessDescriptions)
+                Write-ADTLogEntry -Message "The running processes have changed. Updating the apps to close: [$($WelcomeState.RunningAppDescriptions -join ',')]..."
+                $listboxCloseProcesses.Items.AddRange($WelcomeState.RunningAppDescriptions)
             }
         }
 
         # If CloseProcesses processes were running when the prompt was shown, and they are subsequently detected to be closed while the form is showing, then close the form. The deferral and CloseProcesses conditions will be re-evaluated.
-        if ($previousRunningProcessDescriptions)
+        if ($previousRunningAppDescriptions)
         {
-            if (!$dynamicRunningProcesses)
+            if (!$dynamicRunningApps)
             {
                 Write-ADTLogEntry -Message 'Previously detected running processes are no longer running.'
                 $formWelcome.Dispose()
             }
         }
-        elseif ($dynamicRunningProcesses)
+        elseif ($dynamicRunningApps)
         {
             # If CloseProcesses processes were not running when the prompt was shown, and they are subsequently detected to be running while the form is showing, then close the form for relaunch. The deferral and CloseProcesses conditions will be re-evaluated.
             Write-ADTLogEntry -Message 'New running processes detected. Updating the form to prompt to close the running applications.'
@@ -279,12 +279,12 @@ function Show-ADTWelcomePromptClassic
     }
 
     # Process Re-Enumeration Timer.
-    $timerRunningProcesses = [System.Windows.Forms.Timer]::new()
-    $timerRunningProcesses.Interval = $adtConfig.UI.DynamicProcessEvaluationInterval * 1000
-    $timerRunningProcesses.add_Tick($timerRunningProcesses_Tick)
+    $timerRunningApps = [System.Windows.Forms.Timer]::new()
+    $timerRunningApps.Interval = $adtConfig.UI.DynamicProcessEvaluationInterval * 1000
+    $timerRunningApps.add_Tick($timerRunningApps_Tick)
     if ($adtConfig.UI.DynamicProcessEvaluation)
     {
-        $timerRunningProcesses.Start()
+        $timerRunningApps.Start()
     }
 
     # Picture Banner.
@@ -333,9 +333,9 @@ function Show-ADTWelcomePromptClassic
     $listBoxCloseProcesses.HorizontalScrollbar = $true
     $listBoxCloseProcesses.Name = 'ListBoxCloseProcesses'
     $listBoxCloseProcesses.TabIndex = 3
-    if ($WelcomeState.RunningProcessDescriptions)
+    if ($WelcomeState.RunningAppDescriptions)
     {
-        $null = $listboxCloseProcesses.Items.AddRange($WelcomeState.RunningProcessDescriptions)
+        $null = $listboxCloseProcesses.Items.AddRange($WelcomeState.RunningAppDescriptions)
     }
 
     # Label Countdown.
@@ -459,7 +459,7 @@ function Show-ADTWelcomePromptClassic
         $labelCountdownMessage.Name = 'LabelCountdownMessage'
         $labelCountdownMessage.TabStop = $false
         $labelCountdownMessage.AutoSize = $true
-        $labelCountdownMessage.Text = if ($ForceCountdown -or !$WelcomeState.RunningProcessDescriptions)
+        $labelCountdownMessage.Text = if ($ForceCountdown -or !$WelcomeState.RunningAppDescriptions)
         {
             $adtStrings.WelcomePrompt.Classic.CountdownMessage.$DeploymentType
         }
@@ -623,7 +623,7 @@ function Show-ADTWelcomePromptClassic
     # Shut down the timer if its running.
     if ($adtConfig.UI.DynamicProcessEvaluation)
     {
-        $timerRunningProcesses.Stop()
+        $timerRunningApps.Stop()
     }
 
     # Return the result to the caller.
