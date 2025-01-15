@@ -91,25 +91,28 @@ function Get-ADTRunningApplications
                     continue
                 }
 
+                # Calculate a description for the running application.
+                $appDesc = if (![System.String]::IsNullOrWhiteSpace($_.Description))
+                {
+                    # The description of the process provided with the object.
+                    $_.Description
+                }
+                elseif (![System.String]::IsNullOrWhiteSpace($process.Description))
+                {
+                    # If the process already has a description field specified, then use it.
+                    $process.Description
+                }
+                else
+                {
+                    # Fall back on the process name if no description is provided by the process or as a parameter to the function.
+                    $process.ProcessName
+                }
+
                 # Output a RunningApplication object for collection.
                 [PSADT.Types.RunningApplication]::new(
                     $process,
                     ($wmiProcess = $wmiProcesses | & { process { if ($_.ProcessId -eq $process.Id) { return $_ } } } | Select-Object -First 1),
-                    $(if (![System.String]::IsNullOrWhiteSpace($_.Description))
-                    {
-                        # The description of the process provided with the object.
-                        $_.Description
-                    }
-                    elseif (![System.String]::IsNullOrWhiteSpace($process.Description))
-                    {
-                        # If the process already has a description field specified, then use it.
-                        $process.Description
-                    }
-                    else
-                    {
-                        # Fall back on the process name if no description is provided by the process or as a parameter to the function.
-                        $process.ProcessName
-                    }),
+                    $appDesc,
                     $wmiProcess.CommandLine.Trim(),
                     $wmiProcess.CommandLine.Replace($wmiProcess.ExecutablePath, $null).TrimStart('"').Trim()
                 )
