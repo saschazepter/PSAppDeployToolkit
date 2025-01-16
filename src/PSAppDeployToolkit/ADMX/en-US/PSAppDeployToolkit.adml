@@ -95,35 +95,7 @@ If the running applications change (new CloseProcesses launched or running proce
 			<string id="DynamicProcessEvaluationInterval_Display">DynamicProcessEvaluationInterval</string>
 			<string id="DynamicProcessEvaluationInterval_Explain">Time in seconds after which to re-enumerate running processes while displaying the Show-ADTInstallationWelcome prompt.</string>
 			<string id="LanguageOverride_Display">LanguageOverride</string>
-			<string id="LanguageOverride_Explain">Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.
-
-Code	| Language
-====	| ========
-AR	: Arabic
-CZ	: Czech
-DA	: Danish
-DE	: German
-EN	: English
-EL	: Greek
-ES	: Spanish
-FI	: Finnish
-FR	: French
-HE	: Hebrew
-HU	: Hungarian
-IT	: Italian
-JA	: Japanese
-KO	: Korean
-NL	: Dutch
-NB	: Norwegian (Bokmål)
-PL	: Polish
-PT	: Portuguese (Portugal)
-PT-BR	: Portuguese (Brazil)
-RU	: Russian
-SK	: Slovak
-SV	: Swedish
-TR	: Turkish
-ZH-Hans	: Chinese (Simplified)
-ZH-Hant	: Chinese (Traditional)</string>
+			<string id="LanguageOverride_Explain">Specify a static UI language using the one of the Language Codes listed below to override the language culture detected on the system.</string>
 			<string id="PromptToSaveTimeout_Display">PromptToSaveTimeout</string>
 			<string id="PromptToSaveTimeout_Explain">Time in seconds after which to re-prompt the user to close applications in case they ignore the prompt or they cancel the application's save prompt.</string>
 			<string id="RestartPromptPersistInterval_Display">RestartPromptPersistInterval</string>
@@ -134,6 +106,31 @@ ZH-Hant	: Chinese (Traditional)</string>
 			<string id="LogStyleLegacy">Legacy</string>
 			<string id="DialogStyleFluent">Fluent</string>
 			<string id="DialogStyleClassic">Classic</string>
+			<string id="LanguageOverrideArabic">Arabic</string>
+			<string id="LanguageOverrideCzech">Czech</string>
+			<string id="LanguageOverrideDanish">Danish</string>
+			<string id="LanguageOverrideGerman">German</string>
+			<string id="LanguageOverrideEnglish">English</string>
+			<string id="LanguageOverrideGreek">Greek</string>
+			<string id="LanguageOverrideSpanish">Spanish</string>
+			<string id="LanguageOverrideFinnish">Finnish</string>
+			<string id="LanguageOverrideFrench">French</string>
+			<string id="LanguageOverrideHebrew">Hebrew</string>
+			<string id="LanguageOverrideHungarian">Hungarian</string>
+			<string id="LanguageOverrideItalian">Italian</string>
+			<string id="LanguageOverrideJapanese">Japanese</string>
+			<string id="LanguageOverrideKorean">Korean</string>
+			<string id="LanguageOverrideDutch">Dutch</string>
+			<string id="LanguageOverrideNorwegian">Norwegian (Bokmål)</string>
+			<string id="LanguageOverridePolish">Polish</string>
+			<string id="LanguageOverridePortuguesePortugal">Portuguese (Portugal)</string>
+			<string id="LanguageOverridePortugueseBrazil">Portuguese (Brazil)</string>
+			<string id="LanguageOverrideRussian">Russian</string>
+			<string id="LanguageOverrideSlovak">Slovak</string>
+			<string id="LanguageOverrideSwedish">Swedish</string>
+			<string id="LanguageOverrideTurkish">Turkish</string>
+			<string id="LanguageOverrideChineseSimplified">Chinese (Simplified)</string>
+			<string id="LanguageOverrideChineseTraditional">Chinese (Traditional)</string>
 		</stringTable>
 		<presentationTable>
 			<presentation id="Logo">
@@ -255,9 +252,7 @@ ZH-Hant	: Chinese (Traditional)</string>
 				<decimalTextBox refId="DynamicProcessEvaluationInterval">DynamicProcessEvaluationInterval</decimalTextBox>
 			</presentation>
 			<presentation id="LanguageOverride">
-				<textBox refId="LanguageOverride">
-					<label>LanguageOverride</label>
-				</textBox>
+				<dropdownList refId="LanguageOverride" noSort="false">LanguageOverride</dropdownList>
 			</presentation>
 			<presentation id="PromptToSaveTimeout">
 				<decimalTextBox refId="PromptToSaveTimeout">PromptToSaveTimeout</decimalTextBox>
