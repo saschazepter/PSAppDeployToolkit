@@ -13,10 +13,6 @@ function Show-ADTWelcomePromptFluent
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.WelcomeState]$WelcomeState,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
         [System.String]$Title,
 
         [Parameter(Mandatory = $true)]
@@ -47,9 +43,9 @@ function Show-ADTWelcomePromptFluent
     $adtStrings = Get-ADTStringTable
 
     # Convert the incoming ProcessObject objects into AppProcessInfo objects.
-    $appsToClose = if ($WelcomeState.RunningApps)
+    $appsToClose = if ($welcomeState.RunningApps)
     {
-        $WelcomeState.RunningApps | & {
+        $welcomeState.RunningApps | & {
             process
             {
                 $_.Process.Refresh(); if (!$_.Process.HasExited)
