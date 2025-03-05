@@ -26,7 +26,7 @@ function Show-ADTHelpConsoleInternal
     # Calculate a DPI offset. This is pretty rough but there's no great way to adjust these sizes otherwise.
     $dpiOffset = if (($dpiScale = [System.Drawing.Graphics]::FromHwnd([System.IntPtr]::Zero).DpiX / 96) -gt 1.0)
     {
-        $dpiScale
+        $dpiScale + ($dpiScale * 0.25)
     }
 
     # Build out a panel to hold the list box (flattens border)
@@ -70,7 +70,7 @@ function Show-ADTHelpConsoleInternal
     $helpForm.Font = $defFont
     $helpForm.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 14)
     $helpForm.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
-    $helpForm.ClientSize = [System.Drawing.Size]::new([System.Math]::Round(1320 - ($dpiOffset * ($dpiOffset -gt 1.25))), [System.Math]::Round(570 - ($dpiOffset * ($dpiOffset -ge 1.25))))
+    $helpForm.ClientSize = [System.Drawing.Size]::new([System.Math]::Round(1320 - $dpiOffset), [System.Math]::Round(570 - $dpiOffset))
     $helpForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
     $helpForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
     $helpForm.Controls.Add($helpComboBox)
