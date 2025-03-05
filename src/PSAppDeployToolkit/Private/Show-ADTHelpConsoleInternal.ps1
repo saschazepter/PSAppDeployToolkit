@@ -31,8 +31,8 @@ function Show-ADTHelpConsoleInternal
 
     # Build out a panel to hold the list box (flattens border)
     $helpListBox = [System.Windows.Forms.ListBox]::new()
-    $helpListBox.ClientSize = [System.Drawing.Size]::new(307, 532)
-    $helpListBox.Location = [System.Drawing.Point]::new(5, 32)
+    $helpListBox.ClientSize = [System.Drawing.Size]::new(308, 532)
+    $helpListBox.Location = [System.Drawing.Point]::new(4, 30)
     $helpListBox.Font = $defFont
     $helpListBox.Anchor = "Top, Left, Bottom"
     $helpListBox.IntegralHeight = $false
@@ -42,8 +42,8 @@ function Show-ADTHelpConsoleInternal
 
     # Build out a panel to hold the module combo box (flattens border)
     $helpComboBox = [System.Windows.Forms.ComboBox]::new()
-    $helpComboBox.ClientSize = [System.Drawing.Size]::new(307, 25)
-    $helpComboBox.Location = [System.Drawing.Point]::new(5, 5)
+    $helpComboBox.ClientSize = [System.Drawing.Size]::new(308, 0)
+    $helpComboBox.Location = [System.Drawing.Point]::new(4, 4)
     $helpComboBox.Font = $defFont
     $helpComboBox.Anchor = "Top, Left, Bottom"
     $helpComboBox.Sorted = $true
@@ -55,8 +55,8 @@ function Show-ADTHelpConsoleInternal
     # Build out a panel to hold the rich text box (flattens border)
     $helpTextBox = [System.Windows.Forms.RichTextBox]::new()
     $helpTextBox.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
-    $helpTextBox.ClientSize = [System.Drawing.Size]::new(992, 559)
-    $helpTextBox.Location = [System.Drawing.Point]::new(321, 5)
+    $helpTextBox.ClientSize = [System.Drawing.Size]::new(992, 558)
+    $helpTextBox.Location = [System.Drawing.Point]::new(320, 4)
     $helpTextBox.Font = [System.Drawing.Font]::new('Consolas', 9)
     $helpTextBox.Anchor = "Top, Left, Right, Bottom"
     $helpTextBox.ReadOnly = $true
@@ -70,10 +70,7 @@ function Show-ADTHelpConsoleInternal
     $helpForm.Font = $defFont
     $helpForm.AutoScaleDimensions = [System.Drawing.SizeF]::new(7, 14)
     $helpForm.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Font
-    $helpForm.ClientSize = [System.Drawing.Size]::new([System.Math]::Round(1322 - $dpiOffset + (1. / 65536.)), [System.Math]::Round(573 - $dpiOffset - (1. / 65536.)))
-    [Console]::WriteLine($dpiOffset)
-    [Console]::WriteLine($helpForm.ClientSize.Width)
-    [Console]::WriteLine($helpForm.ClientSize.Height)
+    $helpForm.ClientSize = [System.Drawing.Size]::new([System.Math]::Round(1320 - ($dpiOffset * ($dpiOffset -gt 1.25))), [System.Math]::Round(570 - ($dpiOffset * ($dpiOffset -ge 1.25))))
     $helpForm.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
     $helpForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
     $helpForm.Controls.Add($helpComboBox)
