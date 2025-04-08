@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Principal;
 using PSADT.LibraryInterfaces;
@@ -29,10 +28,10 @@ namespace PSADT.Execution
         /// <summary>
         /// Launches a process with the specified start info and waits for it to complete.
         /// </summary>
-        /// <param name="startInfo"></param>
+        /// <param name="launchInfo"></param>
         /// <returns></returns>
         /// <exception cref="TaskCanceledException"></exception>
-        public static async Task<ProcessResult> LaunchAsync(ProcessLaunchInfo startInfo)
+        public static async Task<ProcessResult?> LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Declare all handles C-style so we can close them in the finally block for cleanup.
             HANDLE hStdOutRead = default;
@@ -40,6 +39,8 @@ namespace PSADT.Execution
             HANDLE hProcess = default;
             HANDLE iocp = default;
             HANDLE job = default;
+            uint? processId = null;
+            int? exitCode = null;
 
             // Lists for output streams to be read into.
             ConcurrentQueue<string> interleaved = [];
@@ -52,11 +53,10 @@ namespace PSADT.Execution
 
             // Determine whether the process we're starting is a console app or not. This is important
             // because under ShellExecuteEx() invocations, stdout/stderr will attach to the running console.
-            bool noWindow = startInfo.NoNewWindow || ((SHOW_WINDOW_CMD)startInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE);
             bool guiApp;
             try
             {
-                guiApp = ExecutableUtilities.GetExecutableInfo(startInfo.FilePath).ExecutableType == ExecutableType.GUI;
+                guiApp = ExecutableUtilities.GetExecutableInfo(launchInfo.FilePath).ExecutableType == ExecutableType.GUI;
             }
             catch
             {
@@ -72,18 +72,18 @@ namespace PSADT.Execution
 
                 // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
                 // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-                if ((!guiApp && noWindow) || !startInfo.UseShellExecute || (null != startInfo.Username))
+                if ((!guiApp && launchInfo.CreateNoWindow) || !launchInfo.UseShellExecute || (null != launchInfo.Username))
                 {
                     var startupInfo = new STARTUPINFOW
                     {
                         cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
                         dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW,
-                        wShowWindow = startInfo.WindowStyle,
+                        wShowWindow = launchInfo.WindowStyle,
                     };
                     try
                     {
                         // The process is created suspended so it can be assigned to the job object.
-                        var creationFlags = (PROCESS_CREATION_FLAGS)startInfo.PriorityClass |
+                        var creationFlags = (PROCESS_CREATION_FLAGS)launchInfo.PriorityClass |
                             PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                             PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
                             PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
@@ -91,8 +91,12 @@ namespace PSADT.Execution
                         // We must create a console window for console apps when the window is shown.
                         if (!guiApp)
                         {
-                            if (noWindow)
+                            if (launchInfo.CreateNoWindow)
                             {
+                                if (launchInfo.CancellationToken != default && launchInfo.NoTerminateOnTimeout)
+                                {
+                                    throw new InvalidOperationException("The NoTerminateOnTimeout option is not supported for console apps while reading stdout/stderr.");
+                                }
                                 startupInfo.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
                                 creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                             }
@@ -117,7 +121,7 @@ namespace PSADT.Execution
 
                         // Handle user process creation, otherwise just create the process for the running user.
                         var pi = new PROCESS_INFORMATION();
-                        if (null != startInfo.Username)
+                        if (null != launchInfo.Username)
                         {
                             using (WindowsIdentity caller = WindowsIdentity.GetCurrent())
                             {
@@ -139,14 +143,14 @@ namespace PSADT.Execution
                             }
 
                             // You can only run a process as a user if they're active.
-                            var session = userSessions.Where(s => (null != s.UserName) && s.UserName.Equals(startInfo.Username, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                            var session = userSessions.Where(s => (null != s.UserName) && s.UserName.Equals(launchInfo.Username, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                             if (null == session)
                             {
-                                throw new InvalidOperationException($"No session found for user {startInfo.Username}.");
+                                throw new InvalidOperationException($"No session found for user {launchInfo.Username}.");
                             }
                             if (session.ConnectState != LibraryInterfaces.WTS_CONNECTSTATE_CLASS.WTSActive)
                             {
-                                throw new InvalidOperationException($"The session for user {startInfo.Username} is not active.");
+                                throw new InvalidOperationException($"The session for user {launchInfo.Username} is not active.");
                             }
 
                             // First we get the user's token.
@@ -158,7 +162,7 @@ namespace PSADT.Execution
                                 {
                                     // If we're to get their linked token, we get it via their user token.
                                     // Once done, we duplicate the linked token to get a primary token to create the new process.
-                                    if (startInfo.UseLinkedAdminToken)
+                                    if (launchInfo.UseLinkedAdminToken)
                                     {
                                         var length = Marshal.SizeOf(typeof(TOKEN_LINKED_TOKEN));
                                         var buffer = Marshal.AllocHGlobal(length);
@@ -183,16 +187,16 @@ namespace PSADT.Execution
                                 }
 
                                 // This is important so that a windowed application can be shown.
-                                if (!noWindow)
+                                if (!((creationFlags & PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW) == PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW || (SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
                                 {
                                     startupInfo.lpDesktop = new PWSTR(Marshal.StringToCoTaskMemUni("winsta0\\default"));
                                 }
 
                                 // Finally, start the process off for the user.
-                                UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, startInfo.InheritEnvironmentVariables);
+                                UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                                 try
                                 {
-                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, startInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, lpEnvironment, startInfo.WorkingDirectory, startupInfo, out pi);
+                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                 }
                                 finally
                                 {
@@ -206,7 +210,7 @@ namespace PSADT.Execution
                         }
                         else
                         {
-                            Kernel32.CreateProcess(null, startInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, IntPtr.Zero, startInfo.WorkingDirectory, startupInfo, out pi);
+                            Kernel32.CreateProcess(null, launchInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, IntPtr.Zero, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
 
                         // Start tracking the process and allow it to resume execution.
@@ -214,6 +218,7 @@ namespace PSADT.Execution
                         {
                             Kernel32.AssignProcessToJobObject(job, (hProcess = pi.hProcess));
                             Kernel32.ResumeThread(pi.hThread);
+                            processId = pi.dwProcessId;
                         }
                         finally
                         {
@@ -232,29 +237,30 @@ namespace PSADT.Execution
                     {
                         cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
                         fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
-                        lpFile = startInfo.FilePath,
-                        lpParameters = startInfo.Arguments,
-                        lpDirectory = startInfo.WorkingDirectory,
+                        lpFile = launchInfo.FilePath,
+                        lpParameters = launchInfo.Arguments,
+                        lpDirectory = launchInfo.WorkingDirectory,
                     };
-                    if (noWindow)
+                    if (launchInfo.CreateNoWindow || ((SHOW_WINDOW_CMD)launchInfo.WindowStyle == SHOW_WINDOW_CMD.SW_HIDE))
                     {
                         startupInfo.fMask |= SEE_MASK_FLAGS.SEE_MASK_NO_CONSOLE;
                         startupInfo.nShow = (int)SHOW_WINDOW_CMD.SW_HIDE;
                     }
                     else
                     {
-                        startupInfo.nShow = startInfo.WindowStyle;
+                        startupInfo.nShow = launchInfo.WindowStyle;
                     }
-                    if (null != startInfo.Verb)
+                    if (null != launchInfo.Verb)
                     {
-                        startupInfo.lpVerb = startInfo.Verb;
+                        startupInfo.lpVerb = launchInfo.Verb;
                     }
 
                     Shell32.ShellExecuteEx(ref startupInfo);
                     if (startupInfo.hProcess != IntPtr.Zero)
                     {
                         hProcess = (HANDLE)startupInfo.hProcess;
-                        Kernel32.SetPriorityClass(hProcess, startInfo.PriorityClass);
+                        processId = Kernel32.GetProcessId(hProcess);
+                        Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
                         Kernel32.AssignProcessToJobObject(job, hProcess);
                     }
                 }
@@ -262,26 +268,41 @@ namespace PSADT.Execution
                 // These tasks read all outputs and wait for the process to complete.
                 await Task.WhenAll(stdOutTask, stdErrTask, (hProcess == default) ? Task.CompletedTask : Task.Run(() =>
                 {
+                    ReadOnlySpan<HANDLE> handles = [iocp, (HANDLE)launchInfo.CancellationToken.WaitHandle.SafeWaitHandle.DangerousGetHandle()];
                     while (true)
                     {
-                        Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out _, PInvoke.INFINITE);
-                        if (lpCompletionCode == PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO)
+                        var index = (uint)Kernel32.WaitForMultipleObjects(handles, false, PInvoke.INFINITE);
+                        if (index == 0)
                         {
-                            break;
+                            Kernel32.GetQueuedCompletionStatus(iocp, out var lpCompletionCode, out _, out _, PInvoke.INFINITE);
+                            if (lpCompletionCode == PInvoke.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO)
+                            {
+                                Kernel32.GetExitCodeProcess(hProcess, out var lpExitCode);
+                                exitCode = ValueTypeConverter<int>.Convert(lpExitCode);
+                                break;
+                            }
                         }
-                        if (startInfo.CancellationToken.IsCancellationRequested)
+                        else if (index == 1)
                         {
-                            startInfo.CancellationToken.ThrowIfCancellationRequested();
+                            if (launchInfo.NoTerminateOnTimeout)
+                            {
+                                break;
+                            }
+                            Kernel32.TerminateJobObject(job, ValueTypeConverter<uint>.Convert(TimeoutExitCode));
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"An invalid result was received while waiting for post-launch handles. Result: {index}");
                         }
                     }
                 }));
 
-                uint exitCode = 0;
-                if (hProcess != default)
+                // Return a ProcessResult object if this was a real process (i.e. not a shell action).
+                if (processId.HasValue)
                 {
-                    Kernel32.GetExitCodeProcess(hProcess, out exitCode);
+                    return new ProcessResult(processId.Value, exitCode, stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly());
                 }
-                return new ProcessResult(ValueTypeConverter<int>.Convert(exitCode), stdout.AsReadOnly(), stderr.AsReadOnly(), interleaved.ToList().AsReadOnly());
+                return null;
             }
             finally
             {
@@ -335,5 +356,11 @@ namespace PSADT.Execution
                 output.Add(text);
             }
         }
+
+        /// <summary>
+        /// Special exit code used to signal when we're terminating a process due to timeout.
+        /// The value is `'PSAppDeployToolkit'.GetHashCode()` under Windows PowerShell 5.1.
+        /// </summary>
+        public const int TimeoutExitCode = -443991205;
     }
 }

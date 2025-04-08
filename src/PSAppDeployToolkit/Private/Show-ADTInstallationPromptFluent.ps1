@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Show-ADTInstallationPromptFluent
+function Private:Show-ADTInstallationPromptFluent
 {
     <#
     .SYNOPSIS

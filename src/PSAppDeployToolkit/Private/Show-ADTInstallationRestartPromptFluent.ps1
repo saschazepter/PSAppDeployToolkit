@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Show-ADTInstallationRestartPromptFluent
+function Private:Show-ADTInstallationRestartPromptFluent
 {
     <#
     .SYNOPSIS

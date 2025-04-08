@@ -15,8 +15,9 @@ namespace PSADT.Execution
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
-        public ProcessResult(int exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
+        public ProcessResult(uint processId, int? exitCode, ReadOnlyCollection<string> stdOut, ReadOnlyCollection<string> stdErr, ReadOnlyCollection<string> interleaved)
         {
+            ProcessId = processId;
             ExitCode = exitCode;
             StdOut = stdOut.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
             StdErr = stdErr.SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse().ToList().AsReadOnly();
@@ -33,9 +34,14 @@ namespace PSADT.Execution
         }
 
         /// <summary>
-        /// Gets the exit code of the process.
+        /// Gets the process ID of the executed process.
         /// </summary>
-        public readonly int ExitCode;
+        public readonly uint ProcessId;
+
+        /// <summary>
+        /// Gets the exit code of the process, if the process had exited.
+        /// </summary>
+        public readonly int? ExitCode;
 
         /// <summary>
         /// Gets the standard output of the process.

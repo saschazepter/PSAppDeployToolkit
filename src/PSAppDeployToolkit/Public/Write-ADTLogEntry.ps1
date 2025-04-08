@@ -83,7 +83,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[PSADT.Module.LogSeverities]]$Severity,
+        [System.Nullable[PSADT.Module.LogSeverity]]$Severity,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -170,7 +170,7 @@ function Write-ADTLogEntry
             {
                 Initialize-ADTModule
             }
-            [PSADT.Module.LoggingUtilities]::WriteLogEntry(
+            [PSADT.Module.LogUtilities]::WriteLogEntry(
                 $messages,
                 ([PSADT.Module.HostLogStream]::None, [PSADT.Module.HostLogStream]::Verbose)[$VerbosePreference.Equals([System.Management.Automation.ActionPreference]::Continue)],
                 $false,

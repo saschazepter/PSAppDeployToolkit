@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Show-ADTInstallationProgressFluent
+function Private:Show-ADTInstallationProgressFluent
 {
     <#
     .SYNOPSIS

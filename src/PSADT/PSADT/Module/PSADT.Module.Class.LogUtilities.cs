@@ -13,7 +13,7 @@ using System.Management.Automation.Runspaces;
 
 namespace PSADT.Module
 {
-    public static class LoggingUtilities
+    public static class LogUtilities
     {
         /// <summary>
         /// Writes a log entry with detailed parameters.
@@ -27,7 +27,7 @@ namespace PSADT.Module
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logType">The type of log.</param>
-        public static ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, LogSeverities? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
+        public static ReadOnlyCollection<LogEntry> WriteLogEntry(string[] message, HostLogStream hostLogStream, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, string? logType = null)
         {
             // Establish logging date/time vars.
             DateTime dateNow = DateTime.Now;
@@ -64,7 +64,7 @@ namespace PSADT.Module
             // Set up default values if not specified.
             if (null == severity)
             {
-                severity = LogSeverities.Info;
+                severity = LogSeverity.Info;
             }
             if (string.IsNullOrWhiteSpace(source))
             {
@@ -72,11 +72,22 @@ namespace PSADT.Module
             }
             if (string.IsNullOrWhiteSpace(logType))
             {
-                logType = (string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
+                try
+                {
+                    logType = (string)((Hashtable)ModuleDatabase.GetConfig()["Toolkit"]!)["LogStyle"]!;
+                }
+                catch
+                {
+                    logType = "CMTrace";
+                }
             }
             if ((null != logFileDirectory) && !Directory.Exists(logFileDirectory))
             {
                 Directory.CreateDirectory(logFileDirectory);
+            }
+            if (null != scriptSection && string.IsNullOrWhiteSpace(scriptSection))
+            {
+                scriptSection = null;
             }
 
             // Store log string to format with message.
@@ -104,7 +115,7 @@ namespace PSADT.Module
                     var safeMsg = msg.Replace("\0", string.Empty);
                     var dskLine = string.Format(dskFormat, safeMsg.Contains((char)10) ? (string.Join(Environment.NewLine, safeMsg.Trim().Split((char)10).Select(static m => Regex.Replace(m.Trim(), "^( +|$)", $"{(char)0x2008}"))) + Environment.NewLine) : safeMsg.Replace("\0", string.Empty));
                     var conLine = string.Format(conFormat, safeMsg);
-                    logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection!, debugMessage, callerFileName, callerSource, conLine, dskLine));
+                    logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource, conLine, dskLine));
                     dskOutput.Add(dskLine);
                     conOutput.Add(conLine);
                 }
@@ -116,7 +127,7 @@ namespace PSADT.Module
                     var safeMsg = msg.Replace("\0", string.Empty);
                     var dskLine = string.Format(dskFormat, safeMsg);
                     var conLine = string.Format(conFormat, safeMsg);
-                    logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection!, debugMessage, callerFileName, callerSource, conLine, dskLine));
+                    logEntries.Add(new LogEntry(dateNow, safeMsg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource, conLine, dskLine));
                     dskOutput.Add(dskLine);
                     conOutput.Add(conLine);
                 }
@@ -138,12 +149,12 @@ namespace PSADT.Module
                 if (hostLogStream.Equals(HostLogStream.Console) || noRunspace)
                 {
                     // Writing straight to the console.
-                    if (severity != LogSeverities.Info)
+                    if (severity != LogSeverity.Info)
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
                         Console.BackgroundColor = sevCols["BackgroundColor"];
                     }
-                    if (severity == LogSeverities.Error)
+                    if (severity == LogSeverity.Error)
                     {
                         Console.Error.WriteLine(string.Join(Environment.NewLine, conOutput));
                     }

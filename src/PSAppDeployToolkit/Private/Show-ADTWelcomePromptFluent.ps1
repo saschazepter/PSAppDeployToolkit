@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Show-ADTWelcomePromptFluent
+function Private:Show-ADTWelcomePromptFluent
 {
     <#
     .SYNOPSIS

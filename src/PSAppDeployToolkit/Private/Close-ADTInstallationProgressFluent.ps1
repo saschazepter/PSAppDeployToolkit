@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Close-ADTInstallationProgressFluent
+function Private:Close-ADTInstallationProgressFluent
 {
     <#
     .SYNOPSIS
