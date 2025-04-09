@@ -7,7 +7,7 @@ using Windows.Win32.Foundation;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the userenv.dll library.
+    /// CsWin32 P/Invoke wrappers for the userenv.dll library.
     /// </summary>
     internal static class UserEnv
     {
@@ -21,15 +21,14 @@ namespace PSADT.LibraryInterfaces
         /// <exception cref="Win32Exception"></exception>
         internal static unsafe BOOL CreateEnvironmentBlock(out IntPtr lpEnvironment, HANDLE hToken, BOOL bInherit)
         {
-            fixed (void* lpEnvironmentPtr = &lpEnvironment)
+            void* lpEnvironmentPtr;
+            var res = PInvoke.CreateEnvironmentBlock(&lpEnvironmentPtr, hToken, bInherit);
+            if (!res)
             {
-                var res = PInvoke.CreateEnvironmentBlock(&lpEnvironmentPtr, hToken, bInherit);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                return res;
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            lpEnvironment = new IntPtr(lpEnvironmentPtr);
+            return res;
         }
 
         /// <summary>
@@ -38,9 +37,9 @@ namespace PSADT.LibraryInterfaces
         /// <param name="lpEnvironment"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe BOOL DestroyEnvironmentBlock(IntPtr lpEnvironment)
+        internal static unsafe BOOL DestroyEnvironmentBlock(ref IntPtr lpEnvironment)
         {
-            if (IntPtr.Zero == lpEnvironment)
+            if (lpEnvironment == default || IntPtr.Zero == lpEnvironment)
             {
                 return true;
             }
@@ -49,6 +48,7 @@ namespace PSADT.LibraryInterfaces
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
+            lpEnvironment = default;
             return res;
         }
     }

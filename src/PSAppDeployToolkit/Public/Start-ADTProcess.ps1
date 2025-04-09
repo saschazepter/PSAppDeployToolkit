@@ -171,7 +171,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Username_CreateNoWindow_Timeout')]
         [ValidateNotNullOrEmpty()]
-        [System.String]$Username,
+        [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Username_CreateWindow_NoWait')]
@@ -455,7 +455,7 @@ function Start-ADTProcess
                         Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity 3
                         $result = [PSADT.Execution.ProcessResult]::new(1618)
                         $naerParams = @{
-                            Exception = [System.TimeoutException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
+                            Exception = [System.Threading.SynchronizationLockException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
                             Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
                             ErrorId = 'MsiExecUnavailable'
                             TargetObject = $FilePath
@@ -486,6 +486,10 @@ function Start-ADTProcess
                 if ($startInfo.UseShellExecute)
                 {
                     Write-ADTLogEntry -Message 'UseShellExecute is set to true, standard output and error will not be available.'
+                    if ($PSBoundParameters.ContainsKey('PriorityClass') -and !(Test-ADTCallerIsAdmin))
+                    {
+                        Write-ADTLogEntry -Message "Setting a priority class on a ShellExecute process is only possible for administrators." -Severity 2
+                    }
                 }
                 elseif (!$CreateNoWindow -or ![System.Diagnostics.ProcessWindowStyle]::Hidden.Equals($WindowStyle))
                 {
@@ -535,6 +539,16 @@ function Start-ADTProcess
                     return
                 }
                 $result = $process.GetAwaiter().GetResult()
+
+                # Handle scenarios where we don't have a ProcessResult object (ShellExecute action, for instance).
+                if (!$result)
+                {
+                    if ($PassThru)
+                    {
+                        Write-ADTLogEntry -Message 'PassThru parameter specified, however no result was available.'
+                    }
+                    return
+                }
 
                 # Check whether the process timed out.
                 if (($null -eq $result.ExitCode) -or ($result.ExitCode -eq [PSADT.Execution.ProcessManager]::TimeoutExitCode))
@@ -619,12 +633,8 @@ function Start-ADTProcess
                 # If the passthru switch is specified, return the exit code and any output from process.
                 if ($PassThru)
                 {
-                    if ($result)
-                    {
-                        Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
-                        return $result
-                    }
-                    Write-ADTLogEntry -Message 'PassThru parameter specified, however no result was available.'
+                    Write-ADTLogEntry -Message 'PassThru parameter specified, returning execution results object.'
+                    return $result
                 }
             }
             catch

@@ -9,9 +9,9 @@ using Windows.Win32.System.RemoteDesktop;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the wtsapi32.dll library.
+    /// CsWin32 P/Invoke wrappers for the wtsapi32.dll library.
     /// </summary>
-    public static class WtsApi32
+    internal static class WtsApi32
     {
         /// <summary>
         /// Wrapper around WTSEnumerateSessions to manage error handling.
@@ -23,7 +23,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="pCount"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        internal static unsafe ReadOnlyCollection<WTS_SESSION_INFOW> WTSEnumerateSessions(HANDLE hServer)
+        internal static unsafe BOOL WTSEnumerateSessions(HANDLE hServer, out ReadOnlyCollection<WTS_SESSION_INFOW> sessionInfo)
         {
             var res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out var ppSessionInfo, out var pCount);
             if (!res)
@@ -37,7 +37,8 @@ namespace PSADT.LibraryInterfaces
                 {
                     sessions.Add(ppSessionInfo[i]);
                 }
-                return sessions.AsReadOnly();
+                sessionInfo = sessions.AsReadOnly();
+                return res;
             }
             finally
             {

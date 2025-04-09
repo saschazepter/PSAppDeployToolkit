@@ -14,22 +14,23 @@ using Windows.Win32.System.Threading;
 namespace PSADT.LibraryInterfaces
 {
     /// <summary>
-    /// Public P/Invokes from the kernel32.dll library.
+    /// CsWin32 P/Invoke wrappers for the kernel32.dll library.
     /// </summary>
     public static class Kernel32
     {
         /// <summary>
         /// Tests whether the current device has completed its Out-of-Box Experience (OOBE).
         /// </summary>
+        /// <param name="isOOBEComplete"></param>
         /// <returns></returns>
-        /// <exception cref="Win32Exception"></exception>
-        public static bool IsOOBEComplete()
+        internal static unsafe BOOL OOBEComplete(out BOOL isOOBEComplete)
         {
-            if (!PInvoke.OOBEComplete(out var isOobeComplete))
+            var res = PInvoke.OOBEComplete(out isOOBEComplete);
+            if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            return isOobeComplete;
+            return res;
         }
 
         /// <summary>
@@ -38,7 +39,7 @@ namespace PSADT.LibraryInterfaces
         /// <param name="processId"></param>
         /// <returns></returns>
         /// <exception cref="Win32Exception"></exception>
-        public static uint ProcessIdToSessionId(uint processId)
+        internal static uint ProcessIdToSessionId(uint processId)
         {
             if (!PInvoke.ProcessIdToSessionId(processId, out uint sessionId))
             {
@@ -201,6 +202,13 @@ namespace PSADT.LibraryInterfaces
             return res;
         }
 
+        /// <summary>
+        /// Wrapper around SetInformationJobObject to provide a managed interface for JOBOBJECT_ASSOCIATE_COMPLETION_PORT setups.
+        /// </summary>
+        /// <param name="hJob"></param>
+        /// <param name="JobObjectInformationClass"></param>
+        /// <param name="lpJobObjectInformation"></param>
+        /// <returns></returns>
         internal static unsafe BOOL SetInformationJobObject(HANDLE hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, JOBOBJECT_ASSOCIATE_COMPLETION_PORT lpJobObjectInformation)
         {
             return SetInformationJobObject(hJob, JobObjectInformationClass, new IntPtr(&lpJobObjectInformation), (uint)sizeof(JOBOBJECT_ASSOCIATE_COMPLETION_PORT));
@@ -538,6 +546,39 @@ namespace PSADT.LibraryInterfaces
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             return res;
+        }
+
+        /// <summary>
+        /// Gets the elapsed amount of milliseconds since system boot as a 64-bit unsigned integer.
+        /// </summary>
+        /// <returns></returns>
+        public static ulong GetTickCount64()
+        {
+            return PInvoke.GetTickCount64();
+        }
+
+        /// <summary>
+        /// Wrapper around DuplicateHandle to manage error handling.
+        /// </summary>
+        /// <param name="hSourceProcessHandle"></param>
+        /// <param name="hSourceHandle"></param>
+        /// <param name="hTargetProcessHandle"></param>
+        /// <param name="lpTargetHandle"></param>
+        /// <param name="dwDesiredAccess"></param>
+        /// <param name="bInheritHandle"></param>
+        /// <param name="dwOptions"></param>
+        /// <returns></returns>
+        internal static unsafe BOOL DuplicateHandle(HANDLE hSourceProcessHandle, HANDLE hSourceHandle, HANDLE hTargetProcessHandle, out HANDLE lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
+        {
+            fixed (HANDLE* pTargetHandle = &lpTargetHandle)
+            {
+                var res = PInvoke.DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, pTargetHandle, (uint)dwDesiredAccess, bInheritHandle, dwOptions);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                return res;
+            }
         }
     }
 }

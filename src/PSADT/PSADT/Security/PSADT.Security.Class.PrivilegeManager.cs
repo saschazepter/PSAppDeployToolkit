@@ -1,8 +1,10 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using PSADT.LibraryInterfaces;
 using Windows.Win32;
 using Windows.Win32.Security;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.Security
 {
@@ -15,7 +17,7 @@ namespace PSADT.Security
         /// Ensures that a security token is enabled.
         /// </summary>
         /// <param name="privilege"></param>
-        public static void EnsurePrivilegeEnabled(SE_PRIVILEGE privilege)
+        internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
             AdvApi32.OpenProcessToken(PInvoke.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
             try
@@ -36,7 +38,7 @@ namespace PSADT.Security
         /// Determines whether a privilege is enabled in the specified token.
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="privilegeName"></param>
+        /// <param name="privilege"></param>
         /// <returns></returns>
         private static bool IsPrivilegeEnabled(HANDLE token, SE_PRIVILEGE privilege)
         {
@@ -69,10 +71,28 @@ namespace PSADT.Security
         }
 
         /// <summary>
+        /// Determines whether a privilege is enabled in the current process token.
+        /// </summary>
+        /// <param name="privilege"></param>
+        /// <returns></returns>
+        internal static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
+        {
+            AdvApi32.OpenProcessToken(PInvoke.GetCurrentProcess(), TOKEN_ACCESS_MASK.TOKEN_QUERY, out var token);
+            try
+            {
+                return IsPrivilegeEnabled(token, privilege);
+            }
+            finally
+            {
+                Kernel32.CloseHandle(ref token);
+            }
+        }
+
+        /// <summary>
         /// Enables a privilege in the specified token.
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="privilegeName"></param>
+        /// <param name="privilege"></param>
         private static void EnablePrivilege(HANDLE token, SE_PRIVILEGE privilege)
         {
             AdvApi32.LookupPrivilegeValue(null, privilege.ToString(), out var luid);
@@ -87,6 +107,27 @@ namespace PSADT.Security
                 Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED
             };
             AdvApi32.AdjustTokenPrivileges(token, false, tp, 0);
+        }
+
+        /// <summary>
+        /// Tests whether the current process has the specified access rights to a process handle.
+        /// </summary>
+        /// <param name="hProcess"></param>
+        /// <param name="accessRights"></param>
+        /// <returns></returns>
+        internal static bool TestProcessAccessRights(HANDLE hProcess, PROCESS_ACCESS_RIGHTS accessRights)
+        {
+            var processHandle = PInvoke.GetCurrentProcess();
+            try
+            {
+                var res = Kernel32.DuplicateHandle(processHandle, hProcess, processHandle, out var newHandle, accessRights, false, 0);
+                Kernel32.CloseHandle(ref newHandle);
+                return res;
+            }
+            catch (UnauthorizedAccessException ex) when (ex.HResult == HRESULT.E_ACCESSDENIED)
+            {
+                return false;
+            }
         }
     }
 }

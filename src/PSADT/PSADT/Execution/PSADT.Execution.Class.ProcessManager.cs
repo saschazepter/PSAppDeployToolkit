@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -132,8 +133,8 @@ namespace PSADT.Execution
                             }
 
                             // SYSTEM usually has these privileges, but locked down environments via WDAC may require specific enablement.
-                            PrivilegeManager.EnsurePrivilegeEnabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                            PrivilegeManager.EnsurePrivilegeEnabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                             // You can only run a process as a user if they're logged on.
                             var userSessions = SessionManager.GetSessionInfo();
@@ -143,7 +144,15 @@ namespace PSADT.Execution
                             }
 
                             // You can only run a process as a user if they're active.
-                            var session = userSessions.Where(s => (null != s.UserName) && s.UserName.Equals(launchInfo.Username, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                            SessionInfo? session = null;
+                            if (!launchInfo.Username.Value.Contains("\\"))
+                            {
+                                session = userSessions.Where(s => launchInfo.Username.Value.Equals(s.UserName, StringComparison.OrdinalIgnoreCase)).First();
+                            }
+                            else
+                            {
+                                session = userSessions.Where(s => s.NTAccount == launchInfo.Username).First();
+                            }
                             if (null == session)
                             {
                                 throw new InvalidOperationException($"No session found for user {launchInfo.Username}.");
@@ -196,11 +205,11 @@ namespace PSADT.Execution
                                 UserEnv.CreateEnvironmentBlock(out var lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                                 try
                                 {
-                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                    Kernel32.CreateProcessAsUser(hPrimaryToken, null, launchInfo.CommandLine, null, null, true, creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                 }
                                 finally
                                 {
-                                    UserEnv.DestroyEnvironmentBlock(lpEnvironment);
+                                    UserEnv.DestroyEnvironmentBlock(ref lpEnvironment);
                                 }
                             }
                             finally
@@ -210,7 +219,7 @@ namespace PSADT.Execution
                         }
                         else
                         {
-                            Kernel32.CreateProcess(null, launchInfo.GetCreateProcessCommandLine(), null, null, true, creationFlags, IntPtr.Zero, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            Kernel32.CreateProcess(null, launchInfo.CommandLine, null, null, true, creationFlags, IntPtr.Zero, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
 
                         // Start tracking the process and allow it to resume execution.
@@ -237,6 +246,7 @@ namespace PSADT.Execution
                     {
                         cbSize = Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
                         fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
+                        lpVerb = launchInfo.Verb,
                         lpFile = launchInfo.FilePath,
                         lpParameters = launchInfo.Arguments,
                         lpDirectory = launchInfo.WorkingDirectory,
@@ -250,18 +260,17 @@ namespace PSADT.Execution
                     {
                         startupInfo.nShow = launchInfo.WindowStyle;
                     }
-                    if (null != launchInfo.Verb)
-                    {
-                        startupInfo.lpVerb = launchInfo.Verb;
-                    }
 
                     Shell32.ShellExecuteEx(ref startupInfo);
                     if (startupInfo.hProcess != IntPtr.Zero)
                     {
                         hProcess = (HANDLE)startupInfo.hProcess;
                         processId = Kernel32.GetProcessId(hProcess);
-                        Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
                         Kernel32.AssignProcessToJobObject(job, hProcess);
+                        if ((launchInfo.PriorityClass != ProcessPriorityClass.Normal) && PrivilegeManager.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                        {
+                            Kernel32.SetPriorityClass(hProcess, launchInfo.PriorityClass);
+                        }
                     }
                 }
 

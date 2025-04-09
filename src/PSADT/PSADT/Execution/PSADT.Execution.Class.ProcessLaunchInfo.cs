@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using System.Security.Principal;
 using System.Threading;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,7 +33,7 @@ namespace PSADT.Execution
             string filePath,
             string[]? argumentList = null,
             string? workingDirectory = null,
-            string? username = null,
+            NTAccount? username = null,
             bool useLinkedAdminToken = false,
             bool inheritEnvironmentVariables = false,
             bool useShellExecute = false,
@@ -68,19 +69,15 @@ namespace PSADT.Execution
             // Validate all nullable parameters.
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
-                workingDirectory = workingDirectory!.Trim();
+                WorkingDirectory = workingDirectory!.Trim();
             }
             else if (Path.GetDirectoryName(filePath) is string fileDir && !string.IsNullOrWhiteSpace(fileDir))
             {
-                workingDirectory = fileDir;
+                WorkingDirectory = fileDir;
             }
             if ((null != argumentList) && (string.Join(" ", argumentList.Select(x => x.Trim())).Trim() is string args) && !string.IsNullOrWhiteSpace(args))
             {
                 Arguments = args;
-            }
-            if (!string.IsNullOrWhiteSpace(username))
-            {
-                Username = username;
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {
@@ -97,10 +94,12 @@ namespace PSADT.Execution
 
             // Set remaining boolean parameters.
             FilePath = filePath;
+            Username = username;
             UseLinkedAdminToken = useLinkedAdminToken;
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseShellExecute = useShellExecute;
             NoTerminateOnTimeout = noTerminateOnTimeout;
+            CommandLine = $"\"{FilePath}\"{((null != Arguments) ? $" {Arguments}" : null)}\0";
         }
 
         /// <summary>
@@ -128,15 +127,6 @@ namespace PSADT.Execution
         });
 
         /// <summary>
-        /// Prepares a null-terminated character array of arguments for CreateProcess.
-        /// </summary>
-        /// <returns></returns>
-        public string GetCreateProcessCommandLine()
-        {
-            return $"\"{FilePath}\"{((null != Arguments) ? $" {Arguments}" : null)}\0";
-        }
-
-        /// <summary>
         /// Gets the file path of the process to launch.
         /// </summary>
         public readonly string FilePath;
@@ -147,6 +137,11 @@ namespace PSADT.Execution
         public readonly string? Arguments = null;
 
         /// <summary>
+        /// Gets the command line to use when starting the process.
+        /// </summary>
+        public readonly string CommandLine;
+
+        /// <summary>
         /// Gets the working directory of the process.
         /// </summary>
         public readonly string? WorkingDirectory = null;
@@ -154,7 +149,7 @@ namespace PSADT.Execution
         /// <summary>
         /// Gets the username to use when starting the process.
         /// </summary>
-        public readonly string? Username = null;
+        public readonly NTAccount? Username;
 
         /// <summary>
         /// Gets a value indicating whether to use the linked admin token to start the process.
