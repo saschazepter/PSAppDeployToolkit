@@ -80,6 +80,7 @@ module.exports = [
     'commands/Register-ADTDll',
     'commands/Remove-ADTContentFromCache',
     'commands/Remove-ADTEdgeExtension',
+    'commands/Remove-ADTEnvironmentVariable',
     'commands/Remove-ADTFile',
     'commands/Remove-ADTFileFromUserProfiles',
     'commands/Remove-ADTFolder',
