@@ -72,6 +72,7 @@ if ($Arguments -eq '-DeployMode Interactive') {
         $ExitCode = $Process.ExitCode
     } else {
         # Using Start-Process with ServiceUI results in Error Code 5 (Access Denied)
+        # Adding an extra comment to test what happens when I only commit a range instead of the whole file
         &".\ServiceUI_$Architecture.exe" -process:explorer.exe Invoke-AppDeployToolkit.exe $Arguments
         $ExitCode = $LastExitCode
     }
