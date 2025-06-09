@@ -21,11 +21,24 @@ function Private:Exit-ADTInvocation
     )
 
     # Attempt to close down any progress dialog here as an additional safety item.
-    $progressOpen = if ($Script:ADT.DisplayServer -and $Script:ADT.DisplayServer.ProgressDialogOpen())
+    $progressOpen = if ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.ProgressDialogOpen())
     {
         try
         {
             Close-ADTInstallationProgress
+        }
+        catch
+        {
+            $_
+        }
+    }
+
+    # Attempt to close down any remaining client/server process as an additional safety item.
+    $clientOpen = if ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.IsRunning)
+    {
+        try
+        {
+            Close-ADTClientServerProcess
         }
         catch
         {
@@ -52,7 +65,7 @@ function Private:Exit-ADTInvocation
 
     # If a callback failed and we're in a proper console, forcibly exit the process.
     # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
-    if ($Force -or ($Host.Name.Equals('ConsoleHost') -and $progressOpen))
+    if ($Force -or ($Host.Name.Equals('ConsoleHost') -and ($progressOpen -or $clientOpen)))
     {
         [System.Environment]::Exit($ExitCode)
     }

@@ -104,7 +104,7 @@ function Copy-ADTFile
         [System.String]$FileCopyMode,
 
         [Parameter(Mandatory = $false)]
-        [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IS /IT /IM /XX /MT:4 /R:1 /W:1',
+        [System.String]$RobocopyParams = '/NJH /NJS /NS /NC /NP /NDL /FP /IA:RASHCNETO /IS /IT /IM /XX /MT:4 /R:1 /W:1',
 
         [Parameter(Mandatory = $false)]
         [System.String]$RobocopyAdditionalParams
@@ -184,7 +184,7 @@ function Copy-ADTFile
             {
                 try
                 {
-                    if (!(Test-Path -Path $srcPath))
+                    if (!(Get-ChildItem -Path $srcPath -Recurse -Force))
                     {
                         if (!$ContinueFileCopyOnError)
                         {
@@ -256,13 +256,19 @@ function Copy-ADTFile
                             $copyFileSplat.ErrorAction = $PSBoundParameters.ErrorAction
                         }
                         Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
-                        Copy-ADTFile @copyFileSplat -Path ((Join-Path $robocopySource $robocopyFile))
+                        if (Get-ChildItem -Path (Join-Path $robocopySource $robocopyFile) -File -Force -ErrorAction Ignore)
+                        {
+                            Copy-ADTFile @copyFileSplat -Path (Join-Path $robocopySource $robocopyFile)
+                        }
 
                         # Copy all files from subfolders, appending file name to subfolder path and repeat Copy-ADTFile.
                         Get-ChildItem -LiteralPath $robocopySource -Directory -Recurse -Force -ErrorAction Ignore | & {
                             process
                             {
-                                Copy-ADTFile @copyFileSplat -Path (Join-Path $_.FullName $robocopyFile)
+                                if (Get-ChildItem -Path (Join-Path $_.FullName $robocopyFile) -File -Force -ErrorAction Ignore)
+                                {
+                                    Copy-ADTFile @copyFileSplat -Path (Join-Path $_.FullName $robocopyFile)
+                                }
                             }
                         }
 
@@ -293,7 +299,7 @@ function Copy-ADTFile
                     $robocopyResult = Start-ADTProcess -FilePath $robocopyCommand -ArgumentList $robocopyArgs -CreateNoWindow -PassThru -SuccessExitCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
 
                     # Trim the last line plus leading whitespace from each line of Robocopy output.
-                    $robocopyOutput = $robocopyResult.StdOut.Trim() -Replace '\n\s+', "`n"
+                    $robocopyOutput = if ($robocopyResult.StdOut) { $robocopyResult.StdOut.Trim() -Replace '\n\s+', "`n" }
                     Write-ADTLogEntry -Message "Robocopy output:`n$robocopyOutput"
 
                     # Restore folder attributes in case Robocopy overwrote them.
