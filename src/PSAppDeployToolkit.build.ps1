@@ -171,7 +171,7 @@ $buildItems = @(
     @{
         SourcePath = 'src\PSADT'
         SolutionPath = 'src\PSADT\PSADT.slnx'
-        BinaryPath = 'src\PSADT\PSADT.ClientServer.Client\bin\Debug\net462'
+        BinaryPath = 'src\PSADT\PSADT.ClientServer.Client\bin\Debug\net472'
         OutputPath = 'src\PSAppDeployToolkit\lib'
         OutputFile = 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Client.exe', 'src\PSAppDeployToolkit\lib\PSADT.ClientServer.Server.dll', 'src\PSAppDeployToolkit\lib\PSADT.dll', 'src\PSAppDeployToolkit\lib\PSADT.UserInterface.dll'
     },
