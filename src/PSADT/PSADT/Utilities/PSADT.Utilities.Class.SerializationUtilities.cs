@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -28,7 +29,7 @@ namespace PSADT.Utilities
             }
             using (MemoryStream ms = new())
             {
-                new DataContractSerializer(typeof(T)).WriteObject(ms, obj);
+                new DataContractSerializer(typeof(T), typesTable.Values).WriteObject(ms, obj);
                 return Convert.ToBase64String(ms.ToArray());
             }
         }
@@ -47,7 +48,7 @@ namespace PSADT.Utilities
             }
             using (MemoryStream ms = new())
             {
-                new DataContractSerializer(obj.GetType()).WriteObject(ms, obj);
+                new DataContractSerializer(obj.GetType(), typesTable.Values).WriteObject(ms, obj);
                 return Convert.ToBase64String(ms.ToArray());
             }
         }
@@ -66,7 +67,7 @@ namespace PSADT.Utilities
             }
             using (MemoryStream ms = new(Convert.FromBase64String(str)))
             {
-                return (T)new DataContractSerializer(typeof(T)).ReadObject(ms)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
+                return (T)new DataContractSerializer(typeof(T), typesTable.Values).ReadObject(ms)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
             }
         }
 
@@ -107,7 +108,7 @@ namespace PSADT.Utilities
                 {
                     throw new InvalidOperationException($"The type [{typeName}] could not be found in the current AppDomain.");
                 }
-                return new DataContractSerializer(type).ReadObject(ms)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
+                return new DataContractSerializer(type, typesTable.Values).ReadObject(ms)! ?? throw new InvalidOperationException("Deserialization returned a null result.");
             }
         }
 
@@ -129,20 +130,27 @@ namespace PSADT.Utilities
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 // Skip non-PSADT assemblies.
-                if (null == assembly.FullName || !assembly.FullName.StartsWith("PSADT"))
+                if (null == assembly.FullName)
                 {
                     continue;
                 }
                 foreach (var type in assembly.GetTypes())
                 {
                     // For valid types, generate lookups for ReadOnlyCollections of the type, Arrays of the type, and the type itself.
-                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName)
+                    if (!type.IsPublic || null == type.FullName || null == type.AssemblyQualifiedName || type.Equals(typeof(ArrayList)) || type.Equals(typeof(CollectionBase)) || type.Equals(typeof(DictionaryBase)) || type.Equals(typeof(ValueType)) || (null != type.BaseType && type.BaseType.Equals(typeof(ValueType))))
                     {
                         continue;
                     }
-                    typesLookup[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(rocAssemblyBaseName, type.AssemblyQualifiedName))!;
-                    typesLookup[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName.Replace(type.Name, $"{type.Name}[]"))!;
-                    typesLookup[type.FullName] = type;
+                    if (assembly.FullName.StartsWith("PSADT"))
+                    {
+                        typesLookup[$"System.Collections.ObjectModel.ReadOnlyCollectionOf{type.Name}DRuo7nFw"] = Type.GetType(string.Format(rocAssemblyBaseName, type.AssemblyQualifiedName))!;
+                        typesLookup[$"{type.Namespace}.ArrayOf{type.Name}"] = Type.GetType(type.AssemblyQualifiedName.Replace(type.Name, $"{type.Name}[]"))!;
+                        typesLookup[type.FullName] = type;
+                    }
+                    else if (type.IsSerializable && !type.ContainsGenericParameters)
+                    {
+                        typesLookup[type.FullName] = type;
+                    }
                 }
             }
 
@@ -171,7 +179,7 @@ namespace PSADT.Utilities
         /// <remarks>This dictionary is initialized with a predefined set of mappings using the <see
         /// cref="BuildTypesLookupTable"/> method. It provides a thread-safe, immutable lookup table for type
         /// associations.</remarks>
-        private static readonly ReadOnlyDictionary<string, Type> typesTable = BuildTypesLookupTable();
+        public static readonly ReadOnlyDictionary<string, Type> typesTable = BuildTypesLookupTable();
 
         /// <summary>
         /// Represents a compiled regular expression used to match primitive type names in a specific format.

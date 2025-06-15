@@ -231,7 +231,7 @@ namespace PSADT.UserInterface
                 using (var dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state))
                 {
                     dialog.ShowDialog();
-                    return dialog.DialogResult;
+                    return (TResult)dialog.DialogResult;
                 }
             });
         }
@@ -337,7 +337,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Initializes the WPF application and invokes the specified action on the UI thread.
         /// </summary>
-        private static TResult InvokeDialogAction<TResult>(Delegate callback)
+        private static TResult InvokeDialogAction<TResult>(Func<TResult> callback)
         {
             // Initialize the WPF application if necessary, otherwise just invoke the callback.
             if (!appInitialized.IsSet)
@@ -353,14 +353,14 @@ namespace PSADT.UserInterface
                 appThread.Start();
                 appInitialized.Wait();
             }
-            return (TResult)app!.Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Normal, callback);
+            return app!.Dispatcher.Invoke(callback);
         }
 
         /// <summary>
-        /// 
+        /// Invokes a dialog action by executing the specified callback.
         /// </summary>
-        /// <param name="callback"></param>
-        private static void InvokeDialogAction(Action callback) => InvokeDialogAction<object>(callback);
+        /// <param name="callback">The action to be executed. Cannot be null.</param>
+        private static void InvokeDialogAction(Action callback) => InvokeDialogAction<object>(() => callback);
 
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Runtime.ExceptionServices;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -523,7 +524,7 @@ namespace PSADT.ClientServer
             }
             if (response.StartsWith($"Error{CommonUtilities.ArgumentSeparator}", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(response.Substring(6));
+                ExceptionDispatchInfo.Capture(SerializationUtilities.DeserializeFromString<Exception>(response.Substring(6))).Throw();
             }
             return response;
         }

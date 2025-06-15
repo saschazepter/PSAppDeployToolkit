@@ -753,6 +753,7 @@ function Show-ADTInstallationWelcome
             }
 
             # Show the dialog and return the result.
+            Remove-Item -LiteralPath "$Script:PSScriptRoot\Assets\AppIcon.png" -Force -Confirm:$false
             return Invoke-ADTClientServerOperation -ShowModalDialog -User $runAsActiveUser -DialogType CloseAppsDialog -DialogStyle $adtConfig.UI.DialogStyle -Options $dialogOptions
         }
 

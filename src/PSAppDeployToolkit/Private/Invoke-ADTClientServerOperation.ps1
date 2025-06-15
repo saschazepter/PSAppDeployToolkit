@@ -165,6 +165,7 @@ function Private:Invoke-ADTClientServerOperation
 
             # Ensure we properly close the client/server process upon the closure of the last active session.
             Add-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.'Close-ADTClientServerProcess'
+            Start-Sleep -Seconds 15
         }
 
         # Invoke the right method depending on the mode.
