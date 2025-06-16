@@ -8,7 +8,7 @@
     }
 
     MSI = @{
-        # Installation parameters used in interactive mode.
+        # MSI install parameters used in interactive mode.
         InstallParams = 'REBOOT=ReallySuppress /QN'
 
         # Logging level used for MSI logging.
@@ -23,10 +23,10 @@
         # The length of time in seconds to wait for the MSI installer service to become available. Default is 600 seconds (10 minutes).
         MutexWaitTime = 600
 
-        # Installation parameters used in silent mode.
+        # MSI install parameters used in silent mode.
         SilentParams = 'REBOOT=ReallySuppress /QN'
 
-        # Installation parameters used for MSI uninstall actions.
+        # MSI uninstall parameters.
         UninstallParams = 'REBOOT=ReallySuppress /QN'
     }
 
