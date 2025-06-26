@@ -140,7 +140,7 @@ namespace PSADT.ProcessManagement
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                         // First we get the user's token.
-                        WtsApi32.WTSQueryUserToken(session.SessionId, out var userToken);
+                        AdvApi32.OpenProcessToken(Process.GetProcessesByName("winlogon").First(p => p.SessionId == session.SessionId).SafeHandle, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_QUERY, out var userToken);
                         SafeFileHandle hPrimaryToken;
                         using (userToken)
                         {
