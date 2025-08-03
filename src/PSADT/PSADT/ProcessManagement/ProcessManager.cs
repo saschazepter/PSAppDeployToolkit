@@ -257,7 +257,8 @@ namespace PSADT.ProcessManagement
             {
                 // Build the command line for the process.
                 OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out var commandSpan, out string? workingDirectory);
-                var argv = CommandLineUtilities.CommandLineToArgumentList(commandLine = commandSpan.ToString().TrimRemoveNull());
+                //var argv = CommandLineUtilities.CommandLineToArgumentList(commandLine = commandSpan.ToString().TrimRemoveNull());
+                commandLine = string.Empty;
 
                 // Set up the shell execute info structure.
                 var startupInfo = new Shell32.SHELLEXECUTEINFO
@@ -265,8 +266,8 @@ namespace PSADT.ProcessManagement
                     cbSize = (uint)Marshal.SizeOf<Shell32.SHELLEXECUTEINFO>(),
                     fMask = SEE_MASK_FLAGS.SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAGS.SEE_MASK_FLAG_NO_UI | SEE_MASK_FLAGS.SEE_MASK_NOZONECHECKS,
                     lpVerb = launchInfo.Verb,
-                    lpFile = argv[0],
-                    lpParameters = CommandLineUtilities.ArgumentListToCommandLine(argv.Skip(1)),
+                    //lpFile = argv[0],
+                    //lpParameters = CommandLineUtilities.ArgumentListToCommandLine(argv.Skip(1)),
                     lpDirectory = workingDirectory,
                 };
                 if (null != launchInfo.WindowStyle)
@@ -575,12 +576,12 @@ namespace PSADT.ProcessManagement
                 {
                     argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
                 }
-                commandSpan = CommandLineUtilities.ArgumentListToCommandLine(argv)!.ToCharArray();
+                commandSpan = null;// CommandLineUtilities.ArgumentListToCommandLine(argv)!.ToCharArray();
                 workingDirectory = null != launchInfo.WorkingDirectory ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
             }
             else
             {
-                commandSpan = CommandLineUtilities.ArgumentListToCommandLine(argv)!.ToCharArray();
+                commandSpan = null;// CommandLineUtilities.ArgumentListToCommandLine(argv)!.ToCharArray();
                 workingDirectory = launchInfo.WorkingDirectory;
             }
         }

@@ -69,13 +69,13 @@ namespace PSADT.Types
             Is64BitApplication = is64BitApplication;
             if (null != UninstallString)
             {
-                var argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
+                var argumentList = new string[] { string.Empty };// CommandLineUtilities.CommandLineToArgumentList(UninstallString);
                 UninstallStringFilePath = argumentList[0];
                 UninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
             }
             if (null != QuietUninstallString)
             {
-                var argumentList = CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
+                var argumentList = new string[] { string.Empty };// CommandLineUtilities.CommandLineToArgumentList(QuietUninstallString);
                 QuietUninstallStringFilePath = argumentList[0];
                 QuietUninstallStringArgumentList = argumentList.Skip(1).ToList().AsReadOnly();
             }

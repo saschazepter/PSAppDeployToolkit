@@ -56,7 +56,7 @@ namespace PSADT.ProcessManagement
                 // of privileges, we simply just return the image path and that's it.
                 try
                 {
-                    commandLine = CommandLineUtilities.CommandLineToArgumentList(ProcessTools.GetProcessCommandLine(process.Id)).ToArray();
+                    commandLine = [string.Empty]; //CommandLineUtilities.CommandLineToArgumentList(ProcessTools.GetProcessCommandLine(process.Id)).ToArray();
                     commandLine[0] = imagePath;
                 }
                 catch
