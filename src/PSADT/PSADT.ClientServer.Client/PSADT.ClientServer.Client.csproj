@@ -30,6 +30,7 @@
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
@@ -57,6 +58,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\..\COPYING.Lesser"/>
+    <EmbeddedResource Include="..\..\..\COPYING.Lesser" />
   </ItemGroup>
 </Project>
