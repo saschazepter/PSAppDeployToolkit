@@ -510,6 +510,11 @@ namespace PSADT.ClientServer
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem)
             {
+                var command = Environment.GetCommandLineArgs().Skip(1).SkipWhile(static arg => !File.Exists(arg)).ToList().AsReadOnly();
+                if (ProcessManager.LaunchAsync(new(command[0], command.Skip(1).ToList().AsReadOnly()))?.Task.GetAwaiter().GetResult() is ProcessResult res)
+                {
+                    Environment.Exit(res.ExitCode);
+                }
                 return SerializeObject(DialogTools.BlockExecutionButtonText);
             }
 
