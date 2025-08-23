@@ -494,7 +494,49 @@ function Start-ADTProcess
 
     process
     {
-        Write-ADTLogEntry -Message "Preparing to execute process [$FilePath]$(if (![System.String]::IsNullOrWhiteSpace($Username)) {" for user [$Username]"})..."
+        # Test the validity of the specified username before proceeding.
+        $runAsActiveUser = if ($Username)
+        {
+            if ($Username.Value -ne [PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode)
+            {
+                if ($Username.Value.Contains('\'))
+                {
+                    (Get-ADTLoggedOnUser).GetEnumerator() | & { process { if ($_.NTAccount -eq $Username) { return [PSADT.Module.RunAsActiveUser]::new($_) } } } | Select-Object -First 1
+                }
+                else
+                {
+                    (Get-ADTLoggedOnUser).GetEnumerator() | & { process { if ($_.Username -eq $Username) { return [PSADT.Module.RunAsActiveUser]::new($_) } } } | Select-Object -First 1
+                }
+            }
+            else
+            {
+                Get-ADTClientServerUser
+            }
+        }
+
+        # If we were meant to find a user and couldn't, throw.
+        if (!$runAsActiveUser -and $Username)
+        {
+            try
+            {
+                $naerParams = @{
+                    Exception = [System.ArgumentNullException]::new("There is no logged on user to run a new process as.", $null)
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    ErrorId = 'NoActiveUserError'
+                    TargetObject = $(if ($Username.Value -ne [PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) { $Username })
+                    RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
+                }
+                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+            }
+            catch
+            {
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                return
+            }
+        }
+
+        # Commence the underlying execution process.
+        Write-ADTLogEntry -Message "Preparing to execute process [$FilePath]$(if ($runAsActiveUser) {" for user [$($runAsActiveUser.NTAccount)]"})..."
         if ($PSBoundParameters.ContainsKey('IgnoreExitCodes') -and !$($IgnoreExitCodes).Equals('*'))
         {
             Write-ADTLogEntry -Message "Please use [-SuccessExitCodes] and/or [-RebootExitCodes] to specify your process's exit codes."
@@ -581,7 +623,7 @@ function Start-ADTProcess
                     $FilePath,
                     $ArgumentList,
                     $WorkingDirectory,
-                    $Username,
+                    $runAsActiveUser,
                     $UseLinkedAdminToken,
                     $UseHighestAvailableToken,
                     $InheritEnvironmentVariables,
@@ -617,16 +659,16 @@ function Start-ADTProcess
                 {
                     if ($SecureArgumentList)
                     {
-                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($Username) {" for user [$Username]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($runAsActiveUser) {" for user [$($runAsActiveUser.NTAccount)]"})..."
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.Length -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($Username) {" for user [$Username]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.Length -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($runAsActiveUser) {" for user [$($runAsActiveUser.NTAccount)]"})..."
                     }
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($Username) {" for user [$Username]"})..."
+                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($runAsActiveUser) {" for user [$($runAsActiveUser.NTAccount)]"})..."
                 }
 
                 # Start the process.

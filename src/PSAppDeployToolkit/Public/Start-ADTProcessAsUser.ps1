@@ -156,7 +156,7 @@ function Start-ADTProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Security.Principal.NTAccount]$Username = (Get-ADTClientServerUser | Select-Object -ExpandProperty NTAccount),
+        [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -291,27 +291,12 @@ function Start-ADTProcessAsUser
 
     process
     {
-        # Test whether there's a proper username to proceed with.
-        if (!$Username)
+        # If we don't have a username specified, use the TimeoutExitCode as a sentinel
+        # value so that Start-ADTProcess can call `Get-ADTClientServerUser` as required.
+        if (!$PSBoundParameters.ContainsKey('Username'))
         {
-            try
-            {
-                $naerParams = @{
-                    Exception = [System.ArgumentNullException]::new('Username', "There is no logged on user to run a new process as.")
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                    ErrorId = 'NoActiveUserError'
-                    TargetObject = $Username
-                    RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
-                }
-                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-            }
-            catch
-            {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
-                return
-            }
+            $PSBoundParameters.Add('Username', [PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode)
         }
-        $PSBoundParameters.Username = $Username
 
         # Just farm it out to Start-ADTProcess as it can do it all.
         try
