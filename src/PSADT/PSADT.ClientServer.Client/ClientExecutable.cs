@@ -99,6 +99,10 @@ namespace PSADT.ClientServer
                 {
                     Console.WriteLine(SilentRestart(ArgvToDictionary(argv)));
                 }
+                else if (argv.Any(static arg => arg == "/GetLastInputTime" || arg == "/glit"))
+                {
+                    Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
+                }
                 else if (argv.Any(static arg => arg == "/ClientServer" || arg == "/cs"))
                 {
                     EnterClientServerMode(ArgvToDictionary(argv));
