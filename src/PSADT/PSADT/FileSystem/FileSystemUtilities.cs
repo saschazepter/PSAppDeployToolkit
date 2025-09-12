@@ -23,7 +23,7 @@ namespace PSADT.FileSystem
         /// Returns a lookup table for NT paths to drive letters.
         /// </summary>
         /// <returns></returns>
-        internal static ReadOnlyDictionary<string, string> GetNtPathLookupTable()
+        public static ReadOnlyDictionary<string, string> GetNtPathLookupTable()
         {
             var lookupTable = new Dictionary<string, string> { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[(int)PInvoke.MAX_PATH];
@@ -41,6 +41,7 @@ namespace PSADT.FileSystem
                 foreach (var path in targetPath.ToString().Trim('\0').Trim().Split('\0'))
                 {
                     var ntPath = path.Trim();
+                    Console.WriteLine($"ntPath: {ntPath} /// driveLetter: {driveLetter}");
                     if (ntPath.Length > 0 && !lookupTable.ContainsKey(ntPath))
                     {
                         lookupTable.Add(ntPath, driveLetter);
