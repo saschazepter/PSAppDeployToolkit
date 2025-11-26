@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -62,7 +63,7 @@ namespace PSADT.Module
                 var appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
                 var appDeployMainScriptVersion = ((Version)adtEnv["appDeployMainScriptVersion"]!).ToString();
                 var IsProcessUserInteractive = (bool)adtEnv["IsProcessUserInteractive"]!;
-                var usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
+                var usersLoggedOn = (ImmutableArray<NTAccount>?)adtEnv["usersLoggedOn"];
                 var RunAsActiveUser = (RunAsActiveUser?)adtEnv["RunAsActiveUser"];
                 var currentLanguage = (string)adtEnv["currentLanguage"]!;
                 var envOSArchitecture = (Architecture)adtEnv["envOSArchitecture"]!;
@@ -648,10 +649,10 @@ namespace PSADT.Module
 
 
                 // Perform checks that need to factor in user context.
-                if (usersLoggedOn?.Count > 0)
+                if (usersLoggedOn?.Length > 0)
                 {
                     // Log details for all currently logged on users.
-                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
+                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Value.Select(static u => u.Value))}].");
                     WriteLogEntry($"Session information for all logged on users:\n\n{adtEnv["LoggedOnUserSessionsText"]}", false);
 
                     // Check if the current process is running in the context of one of the logged on users
