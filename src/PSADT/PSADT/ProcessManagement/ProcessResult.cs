@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using PSADT.Utilities;
 
@@ -36,9 +37,9 @@ namespace PSADT.ProcessManagement
         /// <param name="interleaved">The interleaved output of the process.</param>
         public ProcessResult(int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode)
         {
-            StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut);
-            StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr);
-            Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved);
+            StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut).ToImmutableArray();
+            StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr).ToImmutableArray();
+            Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved).ToImmutableArray();
         }
 
         /// <summary>
@@ -74,16 +75,16 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        public readonly IReadOnlyList<string>? StdOut;
+        public readonly IImmutableList<string>? StdOut;
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        public readonly IReadOnlyList<string>? StdErr;
+        public readonly IImmutableList<string>? StdErr;
 
         /// <summary>
         /// Gets the combined standard output and error of the process.
         /// </summary>
-        public readonly IReadOnlyList<string>? Interleaved;
+        public readonly IImmutableList<string>? Interleaved;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -62,7 +63,7 @@ namespace PSADT.Module
                 var appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
                 var appDeployMainScriptVersion = ((Version)adtEnv["appDeployMainScriptVersion"]!).ToString();
                 var IsProcessUserInteractive = (bool)adtEnv["IsProcessUserInteractive"]!;
-                var usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
+                var usersLoggedOn = (ImmutableArray<NTAccount>?)adtEnv["usersLoggedOn"];
                 var RunAsActiveUser = (RunAsActiveUser?)adtEnv["RunAsActiveUser"];
                 var currentLanguage = (string)adtEnv["currentLanguage"]!;
                 var envOSArchitecture = (Architecture)adtEnv["envOSArchitecture"]!;
@@ -164,19 +165,19 @@ namespace PSADT.Module
                     }
                     if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (paramValue is not null))
                     {
-                        _appSuccessExitCodes = new((int[])paramValue);
+                        _appSuccessExitCodes = [.. (int[])paramValue];
                     }
                     if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (paramValue is not null))
                     {
-                        _appRebootExitCodes = new((int[])paramValue);
+                        _appRebootExitCodes = [.. (int[])paramValue];
                     }
                     if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (paramValue is not null))
                     {
-                        _appProcessesToClose = new((ProcessDefinition[])paramValue);
+                        _appProcessesToClose = [.. (ProcessDefinition[])paramValue];
                     }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (paramValue is not null))
                     {
-                        _scriptDirectory = new((string[])paramValue);
+                        _scriptDirectory = [.. (string[])paramValue];
                     }
                     if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
@@ -196,7 +197,7 @@ namespace PSADT.Module
                     }
                     if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (paramValue is not null))
                     {
-                        _defaultMspFiles = new((string[])paramValue);
+                        _defaultMspFiles = [.. (string[])paramValue];
                     }
                     if (parameters.TryGetValue("DisableDefaultMsiProcessList", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -240,7 +241,7 @@ namespace PSADT.Module
                 }
 
                 // Establish script directories.
-                if (_scriptDirectory.Count > 0)
+                if (_scriptDirectory.Length > 0)
                 {
                     foreach (var directory in _scriptDirectory)
                     {
@@ -345,18 +346,18 @@ namespace PSADT.Module
                         }
 
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-                        if (_defaultMspFiles.Count == 0)
+                        if (_defaultMspFiles.Length == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(_dirFiles) && (Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase)).ToArray() is string[] mspFiles) && (mspFiles.Length > 0))
+                            if (!string.IsNullOrWhiteSpace(_dirFiles))
                             {
-                                _defaultMspFiles = new(mspFiles);
+                                _defaultMspFiles = [.. Directory.GetFiles(_dirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase))];
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(_dirFiles) && (null != _defaultMspFiles.FirstOrDefault(static f => !Path.IsPathRooted(f))))
+                        else if (!string.IsNullOrWhiteSpace(_dirFiles) && _defaultMspFiles.Any(static f => !Path.IsPathRooted(f)))
                         {
-                            _defaultMspFiles = _defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f).ToList().AsReadOnly();
+                            _defaultMspFiles = [.. _defaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(_dirFiles, f) : f)];
                         }
-                        if (_defaultMspFiles.Count > 0)
+                        if (_defaultMspFiles.Length > 0)
                         {
                             WriteLogEntry($"Discovered Zero-Config MSP installation file(s) [{string.Join(", ", _defaultMspFiles)}].");
                         }
@@ -370,7 +371,7 @@ namespace PSADT.Module
                                 var msiExecList = ((IReadOnlyDictionary<string, object>)gmtpOutput[0].BaseObject).Where(static p => Path.GetExtension(p.Key).Equals(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Regex.Replace(Path.GetFileNameWithoutExtension(p.Key), "^_", string.Empty)));
                                 if (msiExecList.Any())
                                 {
-                                    _appProcessesToClose = _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First()).ToList().AsReadOnly();
+                                    _appProcessesToClose = [.. _appProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())];
                                     WriteLogEntry($"MSI Executable List [{string.Join(", ", msiExecList.Select(static p => p.Name))}].");
                                 }
                             }
@@ -648,10 +649,10 @@ namespace PSADT.Module
 
 
                 // Perform checks that need to factor in user context.
-                if (usersLoggedOn?.Count > 0)
+                if (usersLoggedOn?.Length > 0)
                 {
                     // Log details for all currently logged on users.
-                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
+                    WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Value.Select(static u => u.Value))}].");
                     WriteLogEntry($"Session information for all logged on users:\n\n{adtEnv["LoggedOnUserSessionsText"]}", false);
 
                     // Check if the current process is running in the context of one of the logged on users
@@ -866,7 +867,7 @@ namespace PSADT.Module
                 }
 
                 // Evaluate processes to close if they're specified.
-                if (forceProcessDetection || _appProcessesToClose.Count > 0)
+                if (forceProcessDetection || _appProcessesToClose.Length > 0)
                 {
                     if (deployModeChanged)
                     {
@@ -1133,7 +1134,7 @@ namespace PSADT.Module
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logStyle">The type of log.</param>
         /// <param name="hostLogStream">What stream to write the message to.</param>
-        public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null, HostLogStream? hostLogStream = null)
+        public IImmutableList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null, HostLogStream? hostLogStream = null)
         {
             var logEntries = LogUtilities.WriteLogEntry(message, hostLogStream ?? GetHostLogStreamMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
             LogBuffer.AddRange(logEntries);
@@ -1420,7 +1421,7 @@ namespace PSADT.Module
         /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
-        private static readonly ReadOnlyCollection<string> DriveLetters = new([@"Z:\", @"Y:\", @"X:\", @"W:\", @"V:\", @"U:\", @"T:\", @"S:\", @"R:\", @"Q:\", @"P:\", @"O:\", @"N:\", @"M:\", @"L:\", @"K:\", @"J:\", @"I:\", @"H:\", @"G:\", @"F:\", @"E:\", @"D:\", @"C:\", @"B:\", @"A:\"]);
+        private static readonly ImmutableArray<string> DriveLetters = [@"Z:\", @"Y:\", @"X:\", @"W:\", @"V:\", @"U:\", @"T:\", @"S:\", @"R:\", @"Q:\", @"P:\", @"O:\", @"N:\", @"M:\", @"L:\", @"K:\", @"J:\", @"I:\", @"H:\", @"G:\", @"F:\", @"E:\", @"D:\", @"C:\", @"B:\", @"A:\"];
 
         /// <summary>
         /// The default exit code to exit out with in the event of an error.
@@ -1515,9 +1516,9 @@ namespace PSADT.Module
         private readonly string? _appArch;
         private readonly string? _appLang;
         private readonly string? _appRevision;
-        private readonly ReadOnlyCollection<int> _appSuccessExitCodes = new([0]);
-        private readonly ReadOnlyCollection<int> _appRebootExitCodes = new([1641, 3010]);
-        private readonly ReadOnlyCollection<ProcessDefinition> _appProcessesToClose = new([]);
+        private readonly ImmutableArray<int> _appSuccessExitCodes = [0];
+        private readonly ImmutableArray<int> _appRebootExitCodes = [1641, 3010];
+        private readonly ImmutableArray<ProcessDefinition> _appProcessesToClose = [];
         private readonly Version? _appScriptVersion;
         private readonly DateTime? _appScriptDate;
         private readonly string? _appScriptAuthor;
@@ -1528,10 +1529,10 @@ namespace PSADT.Module
         private readonly ReadOnlyDictionary<string, object>? _deployAppScriptParameters;
         private readonly string _currentDate;
         private readonly string _currentTime;
-        private readonly ReadOnlyCollection<string> _scriptDirectory = new([]);
+        private readonly ImmutableArray<string> _scriptDirectory = [];
         private readonly string? _defaultMsiFile;
         private readonly string? _defaultMstFile;
-        private readonly ReadOnlyCollection<string> _defaultMspFiles = new([]);
+        private readonly ImmutableArray<string> _defaultMspFiles = [];
         private readonly string _logPath;
         private readonly string _logName;
         private string _installPhase = "Initialization";

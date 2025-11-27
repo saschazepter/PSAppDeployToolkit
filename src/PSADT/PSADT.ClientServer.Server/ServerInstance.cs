@@ -64,7 +64,7 @@ namespace PSADT.ClientServer
             {
                 _clientProcess = ProcessManager.LaunchAsync(new(
                     _assemblyLocation,
-                    new(["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()]),
+                    ["/ClientServer", "-InputPipe", _outputServer.GetClientHandleAsString(), "-OutputPipe", _inputServer.GetClientHandleAsString(), "-LogPipe", _logServer.GetClientHandleAsString()],
                     Environment.SystemDirectory,
                     RunAsActiveUser,
                     UseLinkedAdminToken,
