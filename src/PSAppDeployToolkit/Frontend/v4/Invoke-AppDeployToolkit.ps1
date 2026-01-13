@@ -320,7 +320,14 @@ try
 catch
 {
     $Host.UI.WriteErrorLine((Out-String -InputObject $_ -Width ([System.Int32]::MaxValue)))
-    exit 60008
+    if ([System.Int32]::TryParse($_.CategoryInfo.TargetName, [ref]$null))
+    {
+        exit [System.Int32]$_.CategoryInfo.TargetName
+    }
+    else
+    {
+        exit 60008
+    }
 }
 
 
