@@ -83,5 +83,6 @@ function Private:Exit-ADTInvocation
     {
         break
     }
+    Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'Cancel' -ButtonMiddleText 'OK' -Icon Information -NoWait -Title Test -Subtitle Test
     exit $ExitCode
 }

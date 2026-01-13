@@ -177,13 +177,6 @@ function Install-ADTDeployment
     $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
 
     ## <Perform Post-Installation tasks here>
-
-
-    ## Display a message at the end of the install.
-    if (!$adtSession.UseDefaultMsi)
-    {
-        Show-ADTInstallationPrompt -Message 'You can customize text to appear at the end of an install or remove it completely for unattended installations.' -ButtonRightText 'OK' -NoWait
-    }
 }
 
 function Uninstall-ADTDeployment
