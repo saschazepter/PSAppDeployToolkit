@@ -680,6 +680,8 @@ function Show-ADTInstallationWelcome
     dynamicparam
     {
         # Initialize variables.
+        $PSCmdlet.SessionState.PSVariable.GetValue('iadtParams') | Out-String | Write-Host
+        $PSCmdlet.SessionState.InvokeCommand.ExpandString('Testing expansion of $($adtSession.InstallName) to see if it works.') | Write-Host
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
         $adtStrings = Get-ADTStringTable
         $adtConfig = Get-ADTConfig
