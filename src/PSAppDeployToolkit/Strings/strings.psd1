@@ -232,7 +232,7 @@
 
             # The subtitle underneath the Install Title, e.g. Company Name.
             Subtitle = @{
-                Install = '{Toolkit\CompanyName} - App Installation'
+                Install = '‍'
                 Repair = '{Toolkit\CompanyName} - App Repair'
                 Uninstall = '{Toolkit\CompanyName} - App Uninstallation'
             }
