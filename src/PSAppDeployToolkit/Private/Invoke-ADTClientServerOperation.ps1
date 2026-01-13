@@ -180,7 +180,9 @@ function Private:Invoke-ADTClientServerOperation
             catch [System.IO.InvalidDataException]
             {
                 # Get the result from the client/server process. This is safe as this catch means it died.
-                $clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true)
+                $clientResult = $Script:ADT.ClientServerProcess.GetClientProcessResult($true)  # This call is dangerous and will have a null exception reference!
+                $evt = Get-WinEvent -ProviderName '.NET Runtime' | & { process { if ($_.Id.Equals(1025) -and $_.Message.Contains('PSADT.ClientServer.Client')) { return $_ } } } | Select-Object -First 1
+                $evt.Message -replace '(?s)^.+Exception Info: (.+)\r?\nStack:.+$', '$1'
 
                 # Construct an ErrorRecord using an exception from the client/server process if possible.
                 $naerParams = @{
