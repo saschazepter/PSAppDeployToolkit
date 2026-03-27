@@ -35,6 +35,21 @@ namespace PSAppDeployToolkit.CodeGen
     public static class PowerShellSyntaxSerializer
     {
         /// <summary>
+        /// Serializes the specified object to a PowerShell-compatible string representation.
+        /// </summary>
+        /// <remarks>The returned string can be used in PowerShell scripts to recreate the original object
+        /// structure, where supported.</remarks>
+        /// <param name="value">The object to serialize. Can be null.</param>
+        /// <returns>A string containing the PowerShell syntax representation of the specified object. Returns an empty string if
+        /// the value is null.</returns>
+        public static string Serialize(object? value)
+        {
+            PowerShellSyntaxWriter writer = new();
+            WriteValue(value, writer);
+            return writer.ToString();
+        }
+
+        /// <summary>
         /// Serializes the specified value to a PowerShell-formatted string.
         /// </summary>
         /// <param name="value">The object to serialize. Can be null.</param>
@@ -43,6 +58,19 @@ namespace PSAppDeployToolkit.CodeGen
         public static string Serialize(object? value, string indentChars = "    ")
         {
             PowerShellSyntaxWriter writer = new(indentChars);
+            WriteValue(value, writer);
+            return writer.ToString();
+        }
+
+        /// <summary>
+        /// Serializes the specified object to a PowerShell syntax string, with optional compression.
+        /// </summary>
+        /// <param name="value">The object to serialize. Can be null.</param>
+        /// <param name="compress">true to compress the output; otherwise, false.</param>
+        /// <returns>A string containing the PowerShell syntax representation of the serialized object.</returns>
+        public static string Serialize(object? value, bool compress)
+        {
+            PowerShellSyntaxWriter writer = new(compress: compress);
             WriteValue(value, writer);
             return writer.ToString();
         }
