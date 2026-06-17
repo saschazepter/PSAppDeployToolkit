@@ -25,6 +25,7 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
     <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+    <InternalsVisibleTo Include="PSADT.Tests" />
   </ItemGroup>
 
   <ItemGroup>

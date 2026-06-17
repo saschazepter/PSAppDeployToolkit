@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
+    <ProjectReference Include="..\PSADT.UserInterface.Interfaces\PSADT.UserInterface.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>
