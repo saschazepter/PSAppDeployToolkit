@@ -32,12 +32,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 DependencyPropertyDescriptor.FromProperty(Fluence.Wpf.Controls.PasswordBox.PasswordProperty, typeof(Fluence.Wpf.Controls.PasswordBox))?.AddValueChanged(InputBoxPassword, OnInputChanged);
                 Loaded += static (sender, __) =>
                 {
-                    if (sender is not InputDialog dialog)
+                    if (sender is InputDialog dialog)
                     {
-                        throw new InvalidProgramException("Unexpected Loaded event sender type. Expected InputDialog.");
+                        dialog.InputBoxPassword.SelectAll();
                     }
-                    _ = dialog.InputBoxPassword.Focus();
-                    dialog.InputBoxPassword.SelectAll();
                 };
             }
             else
@@ -46,15 +44,19 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 InputBoxText.TextChanged += OnTextInputChanged;
                 Loaded += static (sender, __) =>
                 {
-                    if (sender is not InputDialog dialog)
+                    if (sender is InputDialog dialog)
                     {
-                        throw new InvalidProgramException("Unexpected Loaded event sender type. Expected InputDialog.");
+                        dialog.InputBoxText.SelectAll();
                     }
-                    _ = dialog.InputBoxText.Focus();
-                    dialog.InputBoxText.SelectAll();
                 };
             }
             UpdateContinueButtonState();
+        }
+
+        /// <inheritdoc />
+        private protected override System.Windows.FrameworkElement? GetInitialFocusElement()
+        {
+            return _secureInput ? InputBoxPassword : InputBoxText;
         }
 
         /// <summary>

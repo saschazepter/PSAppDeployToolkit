@@ -335,6 +335,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             UpdateRunningProcesses();
         }
 
+        /// <inheritdoc />
+        private protected override FrameworkElement? GetInitialFocusElement()
+        {
+            return ButtonLeft;
+        }
+
         /// <summary>
         /// Handles the Loaded event for the FluentDialog, performing additional initialization and event handler setup
         /// after the base dialog has loaded.

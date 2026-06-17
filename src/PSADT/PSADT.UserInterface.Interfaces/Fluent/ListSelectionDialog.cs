@@ -46,10 +46,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 ListSelectionComboBox.SelectedIndex = options.SelectedIndex.Value;
             }
-            _ = ListSelectionComboBox.Focus();
-
             // Set heading text from localized strings if available.
             ListSelectionHeadingTextBlock.Text = options.Strings.ListSelectionMessage;
+        }
+
+        /// <inheritdoc />
+        private protected override System.Windows.FrameworkElement? GetInitialFocusElement()
+        {
+            return ListSelectionComboBox;
         }
 
         /// <summary>

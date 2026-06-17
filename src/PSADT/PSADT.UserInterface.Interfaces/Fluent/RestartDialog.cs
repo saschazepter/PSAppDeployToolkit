@@ -44,6 +44,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             SetCancelButton(ButtonRight);
         }
 
+        /// <inheritdoc />
+        private protected override FrameworkElement? GetInitialFocusElement()
+        {
+            return ButtonLeft;
+        }
+
         /// <summary>
         /// Handles the event when the left button is clicked, initiating an immediate system restart.
         /// </summary>

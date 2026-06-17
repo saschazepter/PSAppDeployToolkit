@@ -9,7 +9,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -364,6 +366,15 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 return;
                 throw;
             }
+
+            // Accessibility: move keyboard focus to the dialog's primary control so a screen reader starts
+            // on actionable content, then announce the dialog's purpose for screen-reader users.
+            if (GetInitialFocusElement() is FrameworkElement focusTarget)
+            {
+                _ = focusTarget.Focus();
+                _ = Keyboard.Focus(focusTarget);
+            }
+            AnnounceNotification(GetOpenAnnouncement());
         }
 
         /// <summary>
@@ -1232,6 +1243,73 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     IsItalic = IsItalic,
                 };
             }
+        }
+
+        /// <summary>
+        /// Raises a transient UI Automation notification so a screen reader speaks <paramref name="message"/>
+        /// without moving keyboard focus. Best-effort: ignored on platforms/AT that don't support it (Win10 1709+).
+        /// </summary>
+        /// <param name="message">The text to announce. Null or whitespace is silently ignored.</param>
+        private protected void AnnounceNotification(string? message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return;
+            }
+            AutomationPeer peer = FrameworkElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
+            try
+            {
+                // RaiseNotificationEvent and its enum types (AutomationNotificationKind / AutomationNotificationProcessing)
+                // are present in the .NET Framework 4.7.2+ runtime (WCU RS3+) but were not shipped in the net472
+                // reference assemblies, so we invoke via reflection. Best-effort: never abort over an announcement.
+                System.Reflection.MethodInfo? raiseMethod = peer.GetType().GetMethod("RaiseNotificationEvent");
+                if (raiseMethod is null)
+                {
+                    return;
+                }
+                System.Type? kindType = System.Type.GetType("System.Windows.Automation.AutomationNotificationKind, UIAutomationTypes");
+                System.Type? procType = System.Type.GetType("System.Windows.Automation.AutomationNotificationProcessing, UIAutomationTypes");
+                if (kindType is null || procType is null)
+                {
+                    return;
+                }
+                object kindOther = System.Enum.Parse(kindType, "Other");
+                object procImportantAll = System.Enum.Parse(procType, "ImportantAll");
+                _ = raiseMethod.Invoke(peer, [kindOther, procImportantAll, message, "PSADTDialogAnnouncement"]);
+            }
+            catch
+            {
+                // Best-effort: RaiseNotificationEvent requires Windows 10 1709+; never abort the dialog over an announcement.
+                return;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Extracts the plain visible text from a TextBlock whether its content was set via Text or Inlines.
+        /// </summary>
+        /// <param name="textBlock">The TextBlock from which to extract text.</param>
+        private protected static string GetPlainText(System.Windows.Controls.TextBlock textBlock)
+        {
+            return new TextRange(textBlock.ContentStart, textBlock.ContentEnd).Text.Trim();
+        }
+
+        /// <summary>
+        /// The element that should receive initial keyboard focus when the dialog opens, or null to keep
+        /// WPF's default. Screen readers begin reading from this element.
+        /// </summary>
+        private protected virtual FrameworkElement? GetInitialFocusElement()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// A spoken summary announced via UI Automation when the dialog opens. Defaults to the primary
+        /// message text when visible; dialogs override to add detail/counts/countdown.
+        /// </summary>
+        private protected virtual string? GetOpenAnnouncement()
+        {
+            return MessageTextStackPanel.Visibility == Visibility.Visible ? GetPlainText(MessageTextBlock) : null;
         }
 
         private void CloseAppsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)

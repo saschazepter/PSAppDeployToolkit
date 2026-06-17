@@ -64,6 +64,15 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
         }
 
+        /// <inheritdoc />
+        private protected override FrameworkElement? GetInitialFocusElement()
+        {
+            return ButtonLeft.Visibility == Visibility.Visible ? ButtonLeft
+                : ButtonMiddle.Visibility == Visibility.Visible ? ButtonMiddle
+                : ButtonRight.Visibility == Visibility.Visible ? ButtonRight
+                : null;
+        }
+
         /// <summary>
         /// Handles the click event for the left button, updating the dialog result if it is still set to the default
         /// value.
