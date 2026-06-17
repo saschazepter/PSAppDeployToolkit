@@ -107,7 +107,8 @@ namespace PSADT.Tests
         [InlineData(45, 90, true, true, false)]     // under a minute, already announced => silent
         [InlineData(10, 90, true, true, true)]      // final ten seconds => announce every tick
         [InlineData(3, 90, true, true, true)]       // final ten seconds => announce every tick
-        [InlineData(50, -1, false, false, false)]   // no warning configured, >60s => silent
+        [InlineData(90, -1, false, false, false)]   // no warning configured, above one minute => silent
+        [InlineData(50, -1, false, false, true)]    // no warning configured, <=60 s => announce once (parity with 60 s visual cue)
         public void DecideCountdownAnnouncement_AnnouncesAtThresholdsOnly(int remainingSeconds, int warningSeconds, bool warnAnnounced, bool finalMinAnnounced, bool expectedAnnounce)
         {
             TimeSpan? warning = warningSeconds < 0 ? null : TimeSpan.FromSeconds(warningSeconds);

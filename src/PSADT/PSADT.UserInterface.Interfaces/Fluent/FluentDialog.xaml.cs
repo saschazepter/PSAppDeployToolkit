@@ -1305,7 +1305,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             double seconds = remaining.TotalSeconds;
             return seconds <= 10
                 ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
-                : seconds <= 60 && !finalMinuteAnnounced && warning.HasValue
+                : seconds <= 60 && !finalMinuteAnnounced
                     ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
                     : warning.HasValue && remaining <= warning.Value && !warningAnnounced
                         ? new CountdownAnnounceDecision(announce: true, warningAnnounced: true, finalMinuteAnnounced: finalMinuteAnnounced)
