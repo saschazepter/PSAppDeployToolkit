@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -51,6 +52,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 };
             }
             UpdateContinueButtonState();
+
+            // Associate the input field with the visible prompt so a screen reader announces the question
+            // as the field's label. (For secure input this targets the outer wrapper; the inner password
+            // field announces as a protected field — see residual limitations.)
+            AutomationProperties.SetLabeledBy(InputBoxText, MessageTextBlock);
+            AutomationProperties.SetLabeledBy(InputBoxPassword, MessageTextBlock);
         }
 
         /// <inheritdoc />

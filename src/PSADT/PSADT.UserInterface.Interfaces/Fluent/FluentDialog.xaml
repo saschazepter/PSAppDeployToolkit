@@ -322,7 +322,6 @@
                         x:Name="InputBoxText"
                         Margin="16,16,16,16"
                         ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="InputBox"
                         Text=""
                         TextAlignment="Left"
                         TextWrapping="Wrap" />
@@ -331,7 +330,6 @@
                         x:Name="InputBoxPassword"
                         Margin="16,16,16,16"
                         ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="SecureInputBox"
                         Visibility="Collapsed" />
                 </StackPanel>
 
@@ -360,8 +358,7 @@
                             x:Name="ListSelectionComboBox"
                             Width="248"
                             HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="List Selection ComboBox" />
+                            VerticalAlignment="Center" />
                     </ui:DockPanel>
                 </StackPanel>
 
