@@ -154,6 +154,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Configure buttons
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.Fluent.ButtonRightText);
             ButtonRight.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            // Esc maps to Defer when a Defer button is available; otherwise Esc does nothing (a forced
+            // close-apps prompt should not be dismissable by Esc).
+            if (ButtonRight.Visibility == Visibility.Visible)
+            {
+                SetCancelButton(ButtonRight);
+            }
             ButtonLeft.Visibility = Visibility.Visible;
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
