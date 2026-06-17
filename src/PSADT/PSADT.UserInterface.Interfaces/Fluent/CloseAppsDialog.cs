@@ -181,6 +181,26 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
+        /// Computes the dialog result used when the countdown expires. Pure translation of the previous
+        /// accessible-name-based logic into explicit state, so it can be unit tested and so the button's
+        /// UI-Automation Name no longer doubles as program state.
+        /// </summary>
+        /// <param name="forcedCountdown">Whether the countdown is forced.</param>
+        /// <param name="hasRunningProcessService">Whether a running-process service is present.</param>
+        /// <param name="buttonLeftShowsCloseText">Whether the left button currently shows the close-apps text.</param>
+        /// <param name="hideCloseButton">Whether the close button is hidden.</param>
+        /// <param name="deferralsAvailable">Whether deferrals are available.</param>
+        /// <returns>The <see cref="CloseAppsDialogResult"/> that should be set when the countdown expires.</returns>
+        internal static CloseAppsDialogResult DecideCloseAppsCountdownResult(bool forcedCountdown, bool hasRunningProcessService, bool buttonLeftShowsCloseText, bool hideCloseButton, bool deferralsAvailable)
+        {
+            return forcedCountdown && (!hasRunningProcessService || (!buttonLeftShowsCloseText && !hideCloseButton))
+                ? CloseAppsDialogResult.Continue
+                : forcedCountdown && deferralsAvailable
+                ? CloseAppsDialogResult.Defer
+                : buttonLeftShowsCloseText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
+        }
+
+        /// <summary>
         /// Updates the deferral values displayed in the dialog.
         /// </summary>
         private void UpdateDeferralValues()
@@ -277,12 +297,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftText);
                     AutomationProperties.SetName(ButtonLeft, _buttonLeftText);
                     ButtonLeft.IsEnabled = true;
+                    _buttonLeftShowsCloseText = true;
                 }
                 else
                 {
                     SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
                     AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                     ButtonLeft.IsEnabled = false;
+                    _buttonLeftShowsCloseText = false;
                 }
             }
             else
@@ -293,6 +315,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                 CloseAppsStackPanel.Visibility = Visibility.Collapsed;
                 ButtonLeft.IsEnabled = true;
+                _buttonLeftShowsCloseText = false;
 
                 // Only auto-close once the window has been loaded; otherwise WPF throws
                 // "Cannot set Visibility... after a Window has closed" when ShowDialog() runs.
@@ -353,7 +376,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftText, StringComparison.Ordinal) ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
+            DialogResult = _buttonLeftShowsCloseText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -388,13 +411,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                DialogResult = _forcedCountdown && (_runningProcessService is null || (AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftNoProcessesText, StringComparison.Ordinal) && !_hideCloseButton))
-                    ? CloseAppsDialogResult.Continue
-                    : _forcedCountdown && DeferralsAvailable()
-                    ? CloseAppsDialogResult.Defer
-                    : AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftText, StringComparison.Ordinal)
-                    ? CloseAppsDialogResult.Close
-                    : CloseAppsDialogResult.Continue;
+                DialogResult = DecideCloseAppsCountdownResult(_forcedCountdown, _runningProcessService is not null, _buttonLeftShowsCloseText, _hideCloseButton, DeferralsAvailable());
                 CloseDialog();
             }
         }
@@ -418,6 +435,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// The text for the left button when there's apps to close.
         /// </summary>
         private readonly string _buttonLeftText;
+
+        /// <summary>
+        /// Tracks whether ButtonLeft currently displays the "Close apps" text (true) versus the
+        /// "no processes / continue" text (false). Used in place of reading the button's accessible
+        /// name so the UI-Automation Name can be cleaned without affecting dialog logic.
+        /// </summary>
+        private bool _buttonLeftShowsCloseText;
 
         /// <summary>
         /// The service object for processing running applications.
