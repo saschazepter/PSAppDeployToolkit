@@ -1267,14 +1267,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 {
                     return;
                 }
-                System.Type? kindType = System.Type.GetType("System.Windows.Automation.AutomationNotificationKind, UIAutomationTypes");
-                System.Type? procType = System.Type.GetType("System.Windows.Automation.AutomationNotificationProcessing, UIAutomationTypes");
-                if (kindType is null || procType is null)
-                {
-                    return;
-                }
-                object kindOther = System.Enum.Parse(kindType, "Other");
-                object procImportantAll = System.Enum.Parse(procType, "ImportantAll");
+                // Derive enum types from the method's own parameters — guaranteed loaded because they are
+                // parameter types of the already-resolved method on the already-loaded peer type.
+                // parameters: [0] AutomationNotificationKind, [1] AutomationNotificationProcessing, [2] string, [3] string
+                System.Reflection.ParameterInfo[] parameters = raiseMethod.GetParameters();
+                object kindOther = System.Enum.Parse(parameters[0].ParameterType, "Other");
+                object procImportantAll = System.Enum.Parse(parameters[1].ParameterType, "ImportantAll");
                 _ = raiseMethod.Invoke(peer, [kindOther, procImportantAll, message, "PSADTDialogAnnouncement"]);
             }
             catch
