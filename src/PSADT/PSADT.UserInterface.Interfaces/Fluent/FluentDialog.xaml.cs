@@ -1246,6 +1246,24 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
+        /// Raises a UI Automation LiveRegionChanged event so a screen reader announces the element's updated
+        /// content. The element must have AutomationProperties.LiveSetting set in XAML. No-op without a peer/listeners.
+        /// </summary>
+        /// <param name="element">The UI element whose live-region content has changed. Null is silently ignored.</param>
+        private protected static void AnnounceLiveRegionChanged(UIElement? element)
+        {
+            if (element is null)
+            {
+                return;
+            }
+            AutomationPeer? peer = element is FrameworkElement frameworkElement
+                ? FrameworkElementAutomationPeer.FromElement(frameworkElement)
+                : null;
+            peer ??= UIElementAutomationPeer.CreatePeerForElement(element);
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
+
+        /// <summary>
         /// Raises a transient UI Automation notification so a screen reader speaks <paramref name="message"/>
         /// without moving keyboard focus. Best-effort: ignored on platforms/AT that don't support it (Win10 1709+).
         /// </summary>

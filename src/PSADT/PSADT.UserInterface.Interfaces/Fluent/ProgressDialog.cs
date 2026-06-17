@@ -59,12 +59,22 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, progressMessage);
                 AutomationProperties.SetName(MessageTextBlock, progressMessage);
+                if (!string.Equals(progressMessage, _lastAnnouncedMessage, StringComparison.Ordinal))
+                {
+                    _lastAnnouncedMessage = progressMessage;
+                    AnnounceLiveRegionChanged(MessageTextBlock);
+                }
             }
 
             if (progressMessageDetail is not null && !string.IsNullOrWhiteSpace(progressMessageDetail))
             {
                 FormatMessageWithHyperlinks(ProgressMessageDetailTextBlock, progressMessageDetail);
                 AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessageDetail);
+                if (!string.Equals(progressMessageDetail, _lastAnnouncedDetail, StringComparison.Ordinal))
+                {
+                    _lastAnnouncedDetail = progressMessageDetail;
+                    AnnounceLiveRegionChanged(ProgressMessageDetailTextBlock);
+                }
             }
 
             if (percentComplete is not null)
@@ -82,5 +92,20 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 ProgressBar.ProgressMode = ProgressBarMode.Indeterminate;
             }
         }
+
+        /// <inheritdoc />
+        private protected override string? GetOpenAnnouncement()
+        {
+            string message = base.GetOpenAnnouncement() ?? string.Empty;
+            string detail = GetPlainText(ProgressMessageDetailTextBlock);
+            string combined = $"{message} {detail}".Trim();
+            return combined.Length > 0 ? combined : null;
+        }
+
+        /// <summary>The last progress message announced to assistive technology (dedupe guard).</summary>
+        private string? _lastAnnouncedMessage;
+
+        /// <summary>The last progress detail message announced to assistive technology (dedupe guard).</summary>
+        private string? _lastAnnouncedDetail;
     }
 }
