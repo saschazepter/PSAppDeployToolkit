@@ -68,5 +68,23 @@ namespace PSADT.Tests
             CloseAppsDialogResult result = CloseAppsDialog.DecideCloseAppsCountdownResult(forced, hasRps, leftShowsClose, hideClose, deferrals);
             Assert.Equal(expected, result.ToString());
         }
+
+        /// <summary>
+        /// Verifies that <see cref="FluentDialog.StripAccessKeyMarker"/> strips the access-key marker
+        /// (<c>_</c>) exactly as <c>SetButtonContentWithAccelerator</c> applies it to the button's
+        /// accessible name.
+        /// </summary>
+        /// <param name="raw">The raw button text, possibly containing an underscore access-key marker.</param>
+        /// <param name="expected">The expected accessible name after the marker is removed.</param>
+        [Theory]
+        [InlineData("Restart _Now", "Restart Now")]
+        [InlineData("_Close Applications", "Close Applications")]
+        [InlineData("Save __ Backup", "Save _ Backup")]  // escaped double-underscore collapses to one
+        [InlineData("No Accelerator", "No Accelerator")]
+        public void AccessKeyMarkerIsStrippedForAccessibleName(string raw, string expected)
+        {
+            // This is the exact transform SetButtonContentWithAccelerator applies to the accessible name.
+            Assert.Equal(expected, FluentDialog.StripAccessKeyMarker(raw));
+        }
     }
 }

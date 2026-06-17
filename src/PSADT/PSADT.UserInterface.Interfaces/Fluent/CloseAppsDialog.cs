@@ -153,7 +153,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Configure buttons
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.Fluent.ButtonRightText);
-            AutomationProperties.SetName(ButtonRight, options.Strings.Fluent.ButtonRightText);
             ButtonRight.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
             ButtonLeft.Visibility = Visibility.Visible;
             SetDefaultButton(ButtonLeft);
@@ -295,14 +294,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 if (!_hideCloseButton)
                 {
                     SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftText);
-                    AutomationProperties.SetName(ButtonLeft, _buttonLeftText);
                     ButtonLeft.IsEnabled = true;
                     _buttonLeftShowsCloseText = true;
                 }
                 else
                 {
                     SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
-                    AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                     ButtonLeft.IsEnabled = false;
                     _buttonLeftShowsCloseText = false;
                 }
@@ -312,7 +309,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 _logAction?.Invoke("Previously detected running processes are no longer running.", LogSeverity.Info);
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
-                AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                 CloseAppsStackPanel.Visibility = Visibility.Collapsed;
                 ButtonLeft.IsEnabled = true;
                 _buttonLeftShowsCloseText = false;

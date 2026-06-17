@@ -690,6 +690,32 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 Text = text,
             };
+
+            // Keep the button's accessible name in sync with its visible label, with the access-key
+            // marker ('_') removed so a screen reader announces "Restart Now", not "Restart _Now".
+            AutomationProperties.SetName(button, StripAccessKeyMarker(text));
+        }
+
+        /// <summary>
+        /// Removes the WPF access-key marker (<c>_</c>) from a button label string so that a screen reader
+        /// announces the clean visible text rather than the raw accelerator syntax.
+        /// </summary>
+        /// <remarks>A single leading underscore before a character is the accelerator marker and is removed.
+        /// A doubled underscore (<c>__</c>) is an escape sequence that represents a literal underscore in the
+        /// displayed text; it collapses to a single <c>_</c> in the returned string.</remarks>
+        /// <param name="text">The raw button text, potentially containing underscore access-key markers.</param>
+        /// <returns>The text with access-key markers removed and escaped double-underscores collapsed to a single
+        /// underscore.</returns>
+        internal static string StripAccessKeyMarker(string text)
+        {
+            // Collapse '__' (escaped literal underscore) first so it is not affected by the
+            // subsequent single-'_' removal.  Use a GUID-based sentinel that cannot appear in
+            // real button text to avoid any round-trip collision.
+            const string sentinel = "\x0001UNDERSCORE\x0001";
+            return text
+                .Replace("__", sentinel, StringComparison.Ordinal)
+                .Replace("_", string.Empty, StringComparison.Ordinal)
+                .Replace(sentinel, "_", StringComparison.Ordinal);
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Automation;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
 
@@ -34,14 +33,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Configure left button
             SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartNow);
-            AutomationProperties.SetName(ButtonLeft, options.Strings.ButtonRestartNow);
             ButtonLeft.Visibility = Visibility.Visible;
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
 
             // Configure right button
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
-            AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
             IsMinimizeButtonVisible = Visibility.Visible;
             ButtonRight.Visibility = Visibility.Visible;
             SetCancelButton(ButtonRight);

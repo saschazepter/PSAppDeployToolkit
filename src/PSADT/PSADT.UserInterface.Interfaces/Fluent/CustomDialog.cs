@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -37,7 +36,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 SetButtonContentWithAccelerator(ButtonLeft, options.ButtonLeftText);
                 ButtonLeft.Visibility = Visibility.Visible;
-                AutomationProperties.SetName(ButtonLeft, options.ButtonLeftText);
                 if (options.DefaultButton == DialogDefaultButton.Left)
                 {
                     SetDefaultButton(ButtonLeft);
@@ -48,7 +46,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 SetButtonContentWithAccelerator(ButtonMiddle, options.ButtonMiddleText);
                 ButtonMiddle.Visibility = Visibility.Visible;
-                AutomationProperties.SetName(ButtonMiddle, options.ButtonMiddleText);
                 if (options.DefaultButton == DialogDefaultButton.Middle)
                 {
                     SetDefaultButton(ButtonMiddle);
@@ -59,7 +56,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 SetButtonContentWithAccelerator(ButtonRight, options.ButtonRightText);
                 ButtonRight.Visibility = Visibility.Visible;
-                AutomationProperties.SetName(ButtonRight, options.ButtonRightText);
                 if (options.DefaultButton == DialogDefaultButton.Right)
                 {
                     SetDefaultButton(ButtonRight);
