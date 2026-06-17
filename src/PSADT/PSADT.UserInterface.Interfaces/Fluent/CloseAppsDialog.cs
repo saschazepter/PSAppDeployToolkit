@@ -347,6 +347,20 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             return ButtonLeft;
         }
 
+        /// <inheritdoc />
+        private protected override string? GetOpenAnnouncement()
+        {
+            string message = base.GetOpenAnnouncement() ?? string.Empty;
+            string apps = AppsToCloseCollection.Count > 0
+                ? $" {AppsToCloseCollection.Count.ToString(CultureInfo.CurrentCulture)} application(s) to close."
+                : string.Empty;
+            string countdown = _countdownDuration.HasValue && CountdownStackPanel.Visibility == Visibility.Visible
+                ? $" {GetPlainText(CountdownHeadingTextBlock)}: {GetPlainText(CountdownValueTextBlock)}."
+                : string.Empty;
+            string combined = (message + apps + countdown).Trim();
+            return combined.Length > 0 ? combined : null;
+        }
+
         /// <summary>
         /// Handles the Loaded event for the FluentDialog, performing additional initialization and event handler setup
         /// after the base dialog has loaded.

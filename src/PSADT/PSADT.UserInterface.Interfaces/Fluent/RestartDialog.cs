@@ -50,6 +50,17 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             return ButtonLeft;
         }
 
+        /// <inheritdoc />
+        private protected override string? GetOpenAnnouncement()
+        {
+            string message = base.GetOpenAnnouncement() ?? string.Empty;
+            string countdown = _countdownDuration.HasValue && CountdownStackPanel.Visibility == Visibility.Visible
+                ? $" {GetPlainText(CountdownHeadingTextBlock)}: {GetPlainText(CountdownValueTextBlock)}."
+                : string.Empty;
+            string combined = (message + countdown).Trim();
+            return combined.Length > 0 ? combined : null;
+        }
+
         /// <summary>
         /// Handles the event when the left button is clicked, initiating an immediate system restart.
         /// </summary>
