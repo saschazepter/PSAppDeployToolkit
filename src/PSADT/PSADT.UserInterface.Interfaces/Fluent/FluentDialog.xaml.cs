@@ -1030,7 +1030,19 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Format the remaining time as hh:mm:ss
             CountdownValueTextBlock.Text = $"{((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)}h {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)}m {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)}s";
-            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)} hours, {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)} minutes, {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)} seconds");
+
+            // Localized accessible name: "<heading>: <visible value>" (heading text is already localized
+            // per dialog, e.g. CloseApps "Automatic start countdown", Restart "Time remaining").
+            AutomationProperties.SetName(CountdownValueTextBlock, $"{GetPlainText(CountdownHeadingTextBlock)}: {CountdownValueTextBlock.Text}");
+
+            // Balanced announcement policy: speak at thresholds only, never every second.
+            CountdownAnnounceDecision decision = DecideCountdownAnnouncement(_countdownRemainingTime, _countdownWarningDuration, _countdownWarningAnnounced, _countdownFinalMinuteAnnounced);
+            _countdownWarningAnnounced = decision.WarningAnnounced;
+            _countdownFinalMinuteAnnounced = decision.FinalMinuteAnnounced;
+            if (decision.Announce)
+            {
+                AnnounceLiveRegionChanged(CountdownValueTextBlock);
+            }
 
             // Update text color based on remaining time using style application
             if (_countdownRemainingTime.TotalSeconds <= 60)
@@ -1115,6 +1127,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Represents the remaining time in a countdown.
         /// </summary>
         private protected TimeSpan _countdownRemainingTime;
+
+        /// <summary>Whether the "entering warning window" countdown announcement has been spoken.</summary>
+        private bool _countdownWarningAnnounced;
+
+        /// <summary>Whether the "final minute" countdown announcement has been spoken.</summary>
+        private bool _countdownFinalMinuteAnnounced;
 
         /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.
@@ -1243,6 +1261,55 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     IsItalic = IsItalic,
                 };
             }
+        }
+
+        /// <summary>
+        /// Result of deciding whether the countdown should be announced to assistive technology at the
+        /// current remaining time, plus the updated "already announced" flags to persist on the dialog.
+        /// </summary>
+        internal readonly struct CountdownAnnounceDecision
+        {
+            /// <summary>Initializes a new <see cref="CountdownAnnounceDecision"/>.</summary>
+            /// <param name="announce">Whether to announce the countdown value to assistive technology on this tick.</param>
+            /// <param name="warningAnnounced">The updated "warning window entered" flag to persist on the dialog.</param>
+            /// <param name="finalMinuteAnnounced">The updated "final minute crossed" flag to persist on the dialog.</param>
+            internal CountdownAnnounceDecision(bool announce, bool warningAnnounced, bool finalMinuteAnnounced)
+            {
+                Announce = announce;
+                WarningAnnounced = warningAnnounced;
+                FinalMinuteAnnounced = finalMinuteAnnounced;
+            }
+
+            /// <summary>Gets whether to announce the countdown value to assistive technology on this tick.</summary>
+            internal bool Announce { get; }
+
+            /// <summary>Gets the updated "warning window entered" flag to persist on the dialog.</summary>
+            internal bool WarningAnnounced { get; }
+
+            /// <summary>Gets the updated "final minute crossed" flag to persist on the dialog.</summary>
+            internal bool FinalMinuteAnnounced { get; }
+        }
+
+        /// <summary>
+        /// Decides whether to announce the countdown now (Balanced policy): once when entering the warning
+        /// window, once when crossing the final minute (≤60 s), and on every tick within the final 10 s.
+        /// Pure function for unit testing; callers persist the returned flags.
+        /// </summary>
+        /// <param name="remaining">The remaining countdown duration.</param>
+        /// <param name="warning">The optional warning window duration; null means no warning is configured.</param>
+        /// <param name="warningAnnounced">Whether the "entering warning window" announcement has already been made.</param>
+        /// <param name="finalMinuteAnnounced">Whether the "final minute" announcement has already been made.</param>
+        /// <returns>A <see cref="CountdownAnnounceDecision"/> indicating whether to announce now and the updated flags.</returns>
+        internal static CountdownAnnounceDecision DecideCountdownAnnouncement(TimeSpan remaining, TimeSpan? warning, bool warningAnnounced, bool finalMinuteAnnounced)
+        {
+            double seconds = remaining.TotalSeconds;
+            return seconds <= 10
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
+                : seconds <= 60 && !finalMinuteAnnounced && warning.HasValue
+                    ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
+                    : warning.HasValue && remaining <= warning.Value && !warningAnnounced
+                        ? new CountdownAnnounceDecision(announce: true, warningAnnounced: true, finalMinuteAnnounced: finalMinuteAnnounced)
+                        : new CountdownAnnounceDecision(announce: false, warningAnnounced: warningAnnounced, finalMinuteAnnounced: finalMinuteAnnounced);
         }
 
         /// <summary>

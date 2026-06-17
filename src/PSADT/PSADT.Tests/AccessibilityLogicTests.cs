@@ -18,6 +18,7 @@
  * along with PSAppDeployToolkit. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.Interfaces.Fluent;
 using Xunit;
@@ -85,6 +86,34 @@ namespace PSADT.Tests
         {
             // This is the exact transform SetButtonContentWithAccelerator applies to the accessible name.
             Assert.Equal(expected, FluentDialog.StripAccessKeyMarker(raw));
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="FluentDialog.DecideCountdownAnnouncement"/> announces only at the
+        /// configured thresholds (entering warning window, crossing final minute, every tick in final 10 s)
+        /// and stays silent at all other times.
+        /// </summary>
+        /// <param name="remainingSeconds">Remaining countdown time in whole seconds.</param>
+        /// <param name="warningSeconds">Warning window size in seconds, or -1 for no warning configured.</param>
+        /// <param name="warnAnnounced">Whether the "entering warning window" announcement has already been made.</param>
+        /// <param name="finalMinAnnounced">Whether the "final minute" announcement has already been made.</param>
+        /// <param name="expectedAnnounce">Whether an announcement is expected at this tick.</param>
+        [Theory]
+        // remainingSeconds, warningSeconds(null=-1), warnAnnounced, finalMinAnnounced => announce
+        [InlineData(120, 90, false, false, false)]  // above all thresholds => silent
+        [InlineData(90, 90, false, false, true)]    // entering warning window => announce once
+        [InlineData(85, 90, true, false, false)]    // still in warning, already announced => silent
+        [InlineData(60, 90, true, false, true)]     // crossing one minute => announce once
+        [InlineData(45, 90, true, true, false)]     // under a minute, already announced => silent
+        [InlineData(10, 90, true, true, true)]      // final ten seconds => announce every tick
+        [InlineData(3, 90, true, true, true)]       // final ten seconds => announce every tick
+        [InlineData(50, -1, false, false, false)]   // no warning configured, >60s => silent
+        public void DecideCountdownAnnouncement_AnnouncesAtThresholdsOnly(int remainingSeconds, int warningSeconds, bool warnAnnounced, bool finalMinAnnounced, bool expectedAnnounce)
+        {
+            TimeSpan? warning = warningSeconds < 0 ? null : TimeSpan.FromSeconds(warningSeconds);
+            FluentDialog.CountdownAnnounceDecision decision = FluentDialog.DecideCountdownAnnouncement(
+                TimeSpan.FromSeconds(remainingSeconds), warning, warnAnnounced, finalMinAnnounced);
+            Assert.Equal(expectedAnnounce, decision.Announce);
         }
     }
 }
