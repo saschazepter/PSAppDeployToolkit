@@ -52,7 +52,7 @@
         </ResourceDictionary>
     </ui:FluenceWindow.Resources>
 
-    <Grid AutomationProperties.Name="Main Container Grid">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="28" />
             <ColumnDefinition />
@@ -69,8 +69,7 @@
             x:Name="SidebarPanel"
             Grid.Row="0"
             Grid.RowSpan="3"
-            Grid.Column="0"
-            AutomationProperties.Name="Sidebar Panel">
+            Grid.Column="0">
 
             <Rectangle x:Name="SidebarAccentFill" Fill="{DynamicResource AccentFillColorDefaultBrush}" />
 
@@ -114,7 +113,6 @@
             Margin="24,24,24,16"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
-            AutomationProperties.Name="Header Panel"
             Orientation="Horizontal">
             <Image
                 x:Name="AppIconImage"
@@ -130,7 +128,6 @@
                 <TextBlock
                     x:Name="AppTitleTextBlock"
                     Width="426"
-                    AutomationProperties.Name="Application Title"
                     Style="{DynamicResource AdtTitleTextBlockStyle}"
                     Text="Excessively Long Application Title 1.1 x64 EN"
                     TextAlignment="Left"
@@ -140,7 +137,6 @@
                 <TextBlock
                     x:Name="SubtitleTextBlock"
                     Width="426"
-                    AutomationProperties.Name="Application Subtitle"
                     Style="{DynamicResource AdtSubTitleTextBlockStyle}"
                     Text="PSAppDeployToolkit - Installation Type"
                     TextAlignment="Left"
@@ -157,7 +153,6 @@
             Grid.Column="1"
             Margin="24,0,24,16"
             VerticalAlignment="Center"
-            AutomationProperties.Name="Main Content Card"
             Background="{DynamicResource LayerFillColorAltBrush}"
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
@@ -172,7 +167,6 @@
                 <StackPanel
                     x:Name="MessageTextStackPanel"
                     VerticalAlignment="Top"
-                    AutomationProperties.Name="Message Container"
                     Orientation="Vertical">
 
                     <TextBlock
@@ -180,7 +174,6 @@
                         Margin="16"
                         ui:TextBlockExtensions.Typography="Body"
                         AutomationProperties.LiveSetting="Polite"
-                        AutomationProperties.Name="Message Text"
                         Text="This is the dialog primary message. This will be replaced when the application dialog is displayed."
                         TextWrapping="Wrap" />
 
@@ -188,7 +181,6 @@
                         x:Name="CustomMessageTextBlock"
                         Margin="16,0,16,16"
                         ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="Additional Message Text"
                         Text="This is a custom message that can be added to the CloseApps and Restart dialogs directly via PowerShell."
                         TextWrapping="Wrap" />
 
@@ -197,7 +189,6 @@
                 <StackPanel
                     x:Name="CloseAppsStackPanel"
                     VerticalAlignment="Center"
-                    AutomationProperties.Name="Close Applications List Container"
                     Orientation="Vertical">
 
                     <ui:ListView
@@ -251,13 +242,11 @@
                                         Grid.Column="1"
                                         Margin="24,0,16,0"
                                         VerticalAlignment="Center"
-                                        AutomationProperties.Name="Close Applications List Container"
                                         Orientation="Vertical">
                                         <TextBlock
                                             x:Name="ListViewTitle"
                                             HorizontalAlignment="Stretch"
                                             ui:TextBlockExtensions.Typography="BodyStrong"
-                                            AutomationProperties.Name="Process Description"
                                             FontWeight="SemiBold"
                                             Text="{Binding Description, Mode=OneWay}"
                                             TextWrapping="Wrap" />
@@ -265,7 +254,6 @@
                                             x:Name="ListViewSubTitle"
                                             HorizontalAlignment="Stretch"
                                             ui:TextBlockExtensions.Typography="BodyStrong"
-                                            AutomationProperties.Name="Process Name"
                                             FontSize="12"
                                             Foreground="{DynamicResource AccentFillColorTertiaryBrush}"
                                             Text="{Binding Name, Mode=OneWay}"
@@ -291,7 +279,6 @@
                         Margin="16,16,16,16"
                         ui:TextBlockExtensions.Typography="Body"
                         AutomationProperties.LiveSetting="Polite"
-                        AutomationProperties.Name="Progress Detail Text"
                         Text="Secondary Progress Message for more details ..."
                         TextWrapping="Wrap" />
 
@@ -389,7 +376,6 @@
                             VerticalAlignment="Center"
                             ui:TextBlockExtensions.Typography="BodyStrong"
                             AutomationProperties.LiveSetting="Assertive"
-                            AutomationProperties.Name="Countdown Timer Value"
                             Text="00:00:00" />
                     </ui:DockPanel>
                 </StackPanel>
@@ -461,7 +447,6 @@
             x:Name="ButtonPanel"
             Grid.Row="2"
             Grid.Column="1"
-            AutomationProperties.Name="Action Buttons Panel"
             Visibility="Visible">
             <Grid
                 x:Name="ActionButtons"
