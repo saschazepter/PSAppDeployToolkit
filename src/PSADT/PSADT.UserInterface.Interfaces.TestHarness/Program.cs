@@ -99,7 +99,7 @@ namespace PSADT.UserInterface.TestHarness
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(540); // Set this high so we have 9 mins before we accidentally reboot ourselves
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(120); // 2 mins before the user can no longer minimize the restart dialog
 
-            const string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
+            const string customDialogMessageText = "The installation requires you to have an extraordinary amount of patience, as well as an almost superhuman ability to [italic]not[/italic] lose your temper. Given that you haven't had much sleep and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
             const string customDialogButtonLeftText = "LeftButton";
             const string customDialogButtonMiddleText = "MiddleButton";
             const string customDialogButtonRightText = "RightButton";

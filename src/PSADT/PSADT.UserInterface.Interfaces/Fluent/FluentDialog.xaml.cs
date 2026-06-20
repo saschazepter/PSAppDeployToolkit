@@ -1324,7 +1324,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 return;
             }
             AutomationPeer? peer = element is FrameworkElement frameworkElement
-                ? FrameworkElementAutomationPeer.FromElement(frameworkElement)
+                ? UIElementAutomationPeer.FromElement(frameworkElement)
                 : null;
             peer ??= UIElementAutomationPeer.CreatePeerForElement(element);
             peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
@@ -1341,7 +1341,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 return;
             }
-            AutomationPeer peer = FrameworkElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
             try
             {
                 // RaiseNotificationEvent and its enum types (AutomationNotificationKind / AutomationNotificationProcessing)
@@ -1356,8 +1356,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 // parameter types of the already-resolved method on the already-loaded peer type.
                 // parameters: [0] AutomationNotificationKind, [1] AutomationNotificationProcessing, [2] string, [3] string
                 System.Reflection.ParameterInfo[] parameters = raiseMethod.GetParameters();
-                object kindOther = System.Enum.Parse(parameters[0].ParameterType, "Other");
-                object procImportantAll = System.Enum.Parse(parameters[1].ParameterType, "ImportantAll");
+                object kindOther = Enum.Parse(parameters[0].ParameterType, "Other");
+                object procImportantAll = Enum.Parse(parameters[1].ParameterType, "ImportantAll");
                 _ = raiseMethod.Invoke(peer, [kindOther, procImportantAll, message, "PSADTDialogAnnouncement"]);
             }
             catch
