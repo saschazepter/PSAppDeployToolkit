@@ -19,7 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PSADT\PSADT.csproj" />
+    <ProjectReference Include="..\PSADT.UserInterface.Interfaces\PSADT.UserInterface.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
   </ItemGroup>
 
 </Project>
