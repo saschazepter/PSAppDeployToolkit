@@ -33,10 +33,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 DependencyPropertyDescriptor.FromProperty(Fluence.Wpf.Controls.PasswordBox.PasswordProperty, typeof(Fluence.Wpf.Controls.PasswordBox))?.AddValueChanged(InputBoxPassword, OnInputChanged);
                 Loaded += static (sender, __) =>
                 {
-                    if (sender is InputDialog dialog)
+                    if (sender is not InputDialog dialog)
                     {
-                        dialog.InputBoxPassword.SelectAll();
+                        throw new InvalidProgramException("Unexpected Loaded event sender type. Expected InputDialog.");
                     }
+                    dialog.InputBoxPassword.SelectAll();
                 };
             }
             else
@@ -45,10 +46,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 InputBoxText.TextChanged += OnTextInputChanged;
                 Loaded += static (sender, __) =>
                 {
-                    if (sender is InputDialog dialog)
+                    if (sender is not InputDialog dialog)
                     {
-                        dialog.InputBoxText.SelectAll();
+                        throw new InvalidProgramException("Unexpected Loaded event sender type. Expected InputDialog.");
                     }
+                    dialog.InputBoxText.SelectAll();
                 };
             }
             UpdateContinueButtonState();
