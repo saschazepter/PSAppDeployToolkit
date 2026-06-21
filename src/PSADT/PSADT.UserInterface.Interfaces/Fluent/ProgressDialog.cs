@@ -102,10 +102,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             return combined.Length > 0 ? combined : null;
         }
 
-        /// <summary>The last progress message announced to assistive technology (dedupe guard).</summary>
+        /// <summary>
+        /// The last progress message announced to assistive technology (dedupe guard).
+        /// </summary>
         private string? _lastAnnouncedMessage;
 
-        /// <summary>The last progress detail message announced to assistive technology (dedupe guard).</summary>
+        /// <summary>
+        /// The last progress detail message announced to assistive technology (dedupe guard).
+        /// </summary>
         private string? _lastAnnouncedDetail;
     }
 }

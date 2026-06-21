@@ -1128,10 +1128,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         private protected TimeSpan _countdownRemainingTime;
 
-        /// <summary>Whether the "entering warning window" countdown announcement has been spoken.</summary>
+        /// <summary>
+        /// Whether the "entering warning window" countdown announcement has been spoken.
+        /// </summary>
         private bool _countdownWarningAnnounced;
 
-        /// <summary>Whether the "final minute" countdown announcement has been spoken.</summary>
+        /// <summary>
+        /// Whether the "final minute" countdown announcement has been spoken.
+        /// </summary>
         private bool _countdownFinalMinuteAnnounced;
 
         /// <summary>
@@ -1280,13 +1284,19 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 FinalMinuteAnnounced = finalMinuteAnnounced;
             }
 
-            /// <summary>Gets whether to announce the countdown value to assistive technology on this tick.</summary>
+            /// <summary>
+            /// Gets whether to announce the countdown value to assistive technology on this tick.
+            /// </summary>
             internal bool Announce { get; }
 
-            /// <summary>Gets the updated "warning window entered" flag to persist on the dialog.</summary>
+            /// <summary>
+            /// Gets the updated "warning window entered" flag to persist on the dialog.
+            /// </summary>
             internal bool WarningAnnounced { get; }
 
-            /// <summary>Gets the updated "final minute crossed" flag to persist on the dialog.</summary>
+            /// <summary>
+            /// Gets the updated "final minute crossed" flag to persist on the dialog.
+            /// </summary>
             internal bool FinalMinuteAnnounced { get; }
         }
 
