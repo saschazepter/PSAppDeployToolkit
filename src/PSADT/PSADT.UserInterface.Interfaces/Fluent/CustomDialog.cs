@@ -62,6 +62,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     SetAccentButton(ButtonRight);
                 }
             }
+
             // Wire keyboard activation conventions when more than one button is shown: Enter activates the
             // first visible (primary) button, Esc activates the last visible (typically cancel) button.
             // The single-button case is already handled by the base UpdateButtonLayout.

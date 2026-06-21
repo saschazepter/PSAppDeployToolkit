@@ -1362,6 +1362,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 {
                     return;
                 }
+
                 // Derive enum types from the method's own parameters — guaranteed loaded because they are
                 // parameter types of the already-resolved method on the already-loaded peer type.
                 // parameters: [0] AutomationNotificationKind, [1] AutomationNotificationProcessing, [2] string, [3] string
