@@ -1316,10 +1316,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             return seconds <= 10
                 ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
                 : seconds <= 60 && !finalMinuteAnnounced
-                    ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
-                    : warning.HasValue && remaining <= warning.Value && !warningAnnounced
-                        ? new CountdownAnnounceDecision(announce: true, warningAnnounced: true, finalMinuteAnnounced: finalMinuteAnnounced)
-                        : new CountdownAnnounceDecision(announce: false, warningAnnounced: warningAnnounced, finalMinuteAnnounced: finalMinuteAnnounced);
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
+                : warning.HasValue && remaining <= warning.Value && !warningAnnounced
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: true, finalMinuteAnnounced: finalMinuteAnnounced)
+                : new CountdownAnnounceDecision(announce: false, warningAnnounced: warningAnnounced, finalMinuteAnnounced: finalMinuteAnnounced);
         }
 
         /// <summary>

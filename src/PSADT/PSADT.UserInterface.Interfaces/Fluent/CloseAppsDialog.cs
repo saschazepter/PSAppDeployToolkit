@@ -202,7 +202,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 ? CloseAppsDialogResult.Continue
                 : forcedCountdown && deferralsAvailable
                 ? CloseAppsDialogResult.Defer
-                : buttonLeftShowsCloseText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
+                : buttonLeftShowsCloseText
+                ? CloseAppsDialogResult.Close
+                : CloseAppsDialogResult.Continue;
         }
 
         /// <summary>
