@@ -435,6 +435,7 @@ namespace Fluence.Wpf.Demo.Pages
             Border border = new()
             {
                 Name = "CopySourceButtonHost",
+                BorderThickness = new Thickness(1),
                 Child = copyButton,
                 CornerRadius = new CornerRadius(4),
                 HorizontalAlignment = HorizontalAlignment.Right,
@@ -442,6 +443,7 @@ namespace Fluence.Wpf.Demo.Pages
                 VerticalAlignment = VerticalAlignment.Top,
             };
             border.SetResourceReference(BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
+            border.SetResourceReference(BorderBrushProperty, "ControlStrokeColorDefaultBrush");
             return border;
         }
 
@@ -484,7 +486,7 @@ namespace Fluence.Wpf.Demo.Pages
                 Padding = new Thickness(0),
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             };
-            viewer.SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
+            viewer.SetResourceReference(BackgroundProperty, "SystemFillColorSolidAttentionBackgroundBrush");
             viewer.SetResourceReference(ForegroundProperty, "TextFillColorPrimaryBrush");
             viewer.Document = CreateSourceDocument(source, language);
             return viewer;
