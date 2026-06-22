@@ -274,8 +274,8 @@ namespace Fluence.Wpf.Tests
                         "Demo right rail should sit flush against the sample border.");
                     AssertBrushColor(rightRail.Background, "CardBackgroundFillColorSecondaryBrush",
                         "Demo right rail should use the WinUI Gallery options-pane surface.");
-                    AssertBrushColor(sourceExpander.Background, "SolidBackgroundFillColorQuarternaryBrush",
-                        "Demo source header should use the WinUI Gallery source-code header background - the darker quarternary surface so the collapsed Source-Code strip reads as a distinct dark band beneath the sample card (matches the screenshots in docs/screenshots/gallery/).");
+                    AssertBrushColor(sourceExpander.Background, "CardBackgroundFillColorSecondaryBrush",
+                        "Demo source expander should use the WinUI Gallery source-code header background (CardBackgroundFillColorSecondaryBrush), matching WinUI ControlExample.xaml.");
                     Assert.AreEqual("Source code", sourceExpander.Header,
                         "Demo source expander header should match the WinUI Gallery source label.");
 
@@ -287,8 +287,8 @@ namespace Fluence.Wpf.Tests
                     WpfBorder? copyButtonHost = FindVisualChildByName<WpfBorder>(sourceExpander, "CopySourceButtonHost");
                     Assert.IsNotNull(sourceViewer, "Expanded source should expose the code viewer.");
                     Assert.IsNotNull(copyButtonHost, "Expanded source should expose the overlaid copy-button host.");
-                    AssertBrushColor(sourceViewer.Background, "SolidBackgroundFillColorBaseBrush",
-                        "Source code should use the darker WinUI Gallery on-image fill role.");
+                    AssertBrushColor(sourceViewer.Background, "SystemFillColorSolidAttentionBackgroundBrush",
+                        "Source code should use the solid attention background surface (F7F7F7 light / 2E2E2E dark).");
                     AssertBrushColor(copyButtonHost.Background, "CardBackgroundFillColorDefaultBrush",
                         "Copy action should sit on the WinUI Gallery on-image fill bubble.");
                 }
@@ -658,9 +658,7 @@ namespace Fluence.Wpf.Tests
         private static bool IsBackgroundLiteralAllowedPath(string path)
         {
             string fileName = Path.GetFileName(path);
-            return fileName.Equals("fluence-wpf-banner-light.xaml", StringComparison.OrdinalIgnoreCase) ||
-                fileName.Equals("fluence-wpf-banner-dark.xaml", StringComparison.OrdinalIgnoreCase) ||
-                fileName.Equals("GalleryAccessibilityPage.xaml", StringComparison.OrdinalIgnoreCase);
+            return fileName.Equals("GalleryAccessibilityPage.xaml", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsBackgroundLiteralAllowedValue(string path, string value)

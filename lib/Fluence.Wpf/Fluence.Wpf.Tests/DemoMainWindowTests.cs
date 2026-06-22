@@ -161,8 +161,8 @@ namespace Fluence.Wpf.Tests
                     Image? image = FindByName<Image>(page, "BrandBannerImage");
                     Assert.IsNotNull(image, "Home page should expose the brand banner image.");
                     Assert.IsInstanceOfType(image.Source, typeof(BitmapImage), "The light banner PNG should load as an image source.");
-                    Assert.AreEqual("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-light.png", image.Tag as string,
-                        "Light theme should use the light banner graphic.");
+                    Assert.AreEqual("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/Fluence_Lockup_SideBySide_Dark.png", image.Tag as string,
+                        "Light theme should use the dark-ink lockup (dark text on a light surface).");
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     Drain(window.Dispatcher);
@@ -170,16 +170,61 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
 
                     Assert.IsInstanceOfType(image.Source, typeof(BitmapImage), "The dark banner PNG should load as an image source.");
-                    Assert.AreEqual("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-dark.png", image.Tag as string,
-                        "Dark theme should use the dark banner graphic.");
+                    Assert.AreEqual("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/Fluence_Lockup_SideBySide_Light.png", image.Tag as string,
+                        "Dark theme should use the light-ink lockup (light text on a dark surface).");
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
 
-                    Assert.AreEqual("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-light.png", image.Tag as string,
-                        "Returning to light theme should restore the light banner graphic.");
+                    Assert.AreEqual("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/Fluence_Lockup_SideBySide_Dark.png", image.Tag as string,
+                        "Returning to light theme should restore the dark-ink lockup.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [TestMethod]
+        public void GalleryHomePage_BrandBannerInkMatchesHighContrastSurface()
+        {
+            RunOnSta(static delegate
+            {
+                EnsureTheme();
+                GalleryHomePage page = new();
+                Window window = CreateHostWindow(page);
+                try
+                {
+                    ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
+                    Drain(window.Dispatcher);
+                    window.UpdateLayout();
+                    Drain(window.Dispatcher);
+
+                    Image? image = FindByName<Image>(page, "BrandBannerImage");
+                    Assert.IsNotNull(image, "Home page should expose the brand banner image.");
+
+                    // The transparent lockups carry no backplate, so under high contrast the
+                    // wordmark ink must follow the live surface luminance. Regression guard: a
+                    // fixed "high contrast -> dark ink" mapping goes invisible on a dark HC scheme.
+                    SolidColorBrush? surface = Application.Current.TryFindResource("SolidBackgroundFillColorBaseBrush") as SolidColorBrush;
+                    Assert.IsNotNull(surface, "High contrast surface brush should resolve.");
+                    double red = surface.Color.R / 255.0;
+                    double green = surface.Color.G / 255.0;
+                    double blue = surface.Color.B / 255.0;
+                    bool darkSurface = ((red * 0.2126) + (green * 0.7152) + (blue * 0.0722)) < 0.5;
+
+                    string expected = darkSurface
+                        ? "pack://application:,,,/Fluence.Wpf.Demo;component/Resources/Fluence_Lockup_SideBySide_Light.png"
+                        : "pack://application:,,,/Fluence.Wpf.Demo;component/Resources/Fluence_Lockup_SideBySide_Dark.png";
+
+                    Assert.AreEqual(expected, image.Tag as string,
+                        "High contrast banner ink must contrast with the live surface luminance.");
+
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
+                    Drain(window.Dispatcher);
                 }
                 finally
                 {
@@ -192,8 +237,7 @@ namespace Fluence.Wpf.Tests
         public void GalleryHomePage_UsesPngBannerResourcesAndGitHubLink()
         {
             string project = ReadRepositoryFile("Fluence.Wpf.Demo", "Fluence.Wpf.Demo.csproj");
-            StringAssert.Contains(project, "<Resource Include=\"Resources\\fluence-wpf-banner-*.png\" />", StringComparison.Ordinal);
-            StringAssert.Contains(project, "<Page Remove=\"Resources\\fluence-wpf-banner-*.xaml\" />", StringComparison.Ordinal);
+            StringAssert.Contains(project, "<Resource Include=\"Resources\\Fluence_Lockup_SideBySide_*.png\" />", StringComparison.Ordinal);
 
             string homePage = ReadRepositoryFile("Fluence.Wpf.Demo", "Pages", "GalleryHomePage.xaml");
             StringAssert.Contains(homePage, "https://github.com/sintaxasn/fluence.wpf", StringComparison.Ordinal);
@@ -202,19 +246,19 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DemoProjects_UseSharedFluenceIcoIcon()
         {
-            const string iconPath = @"Resources\fluence-wpf-appicon-256.ico";
+            const string iconPath = @"Resources\Fluence.ico";
 
             AssertProjectUsesIcon("Fluence.Wpf.Demo", "Fluence.Wpf.Demo.csproj", iconPath);
             AssertProjectUsesIcon("Fluence.Wpf.Demo.Mvvm", "Fluence.Wpf.Demo.Mvvm.csproj", iconPath);
 
             StringAssert.Contains(ReadRepositoryFile("Fluence.Wpf.Demo", "MainWindow.xaml"),
-                "Icon=\"Resources/fluence-wpf-appicon-256.ico\"", StringComparison.Ordinal);
+                "Icon=\"Resources/Fluence.ico\"", StringComparison.Ordinal);
             StringAssert.Contains(ReadRepositoryFile("Fluence.Wpf.Demo.Mvvm", "MainWindow.xaml"),
-                "Icon=\"Resources/fluence-wpf-appicon-256.ico\"", StringComparison.Ordinal);
+                "Icon=\"Resources/Fluence.ico\"", StringComparison.Ordinal);
 
-            Assert.IsTrue(File.Exists(GetRepositoryFilePath("Fluence.Wpf.Demo", "Resources", "fluence-wpf-appicon-256.ico")),
+            Assert.IsTrue(File.Exists(GetRepositoryFilePath("Fluence.Wpf.Demo", "Resources", "Fluence.ico")),
                 "The gallery demo icon should exist.");
-            Assert.IsTrue(File.Exists(GetRepositoryFilePath("Fluence.Wpf.Demo.Mvvm", "Resources", "fluence-wpf-appicon-256.ico")),
+            Assert.IsTrue(File.Exists(GetRepositoryFilePath("Fluence.Wpf.Demo.Mvvm", "Resources", "Fluence.ico")),
                 "The MVVM demo icon should exist.");
         }
 
@@ -461,25 +505,25 @@ namespace Fluence.Wpf.Tests
                     Controls.TextBox? search = FindByName<Controls.TextBox>(window, "NavSearchBox");
                     Assert.IsNotNull(shellTitleBar, "Extended title bar should use the shared TitleBar control.");
                     Assert.IsNotNull(search, "Demo search box must be present.");
-                    Assert.AreEqual(230.0, search.Width, 0.01,
-                        "Demo title-bar search should use the requested 230px resting width.");
-                    Assert.AreEqual(230.0, search.MinWidth, 0.01,
-                        "Demo title-bar search should not shrink below the requested 230px resting width.");
+                    Assert.AreEqual(300.0, search.Width, 0.01,
+                        "Demo title-bar search should use the requested 300px resting width.");
+                    Assert.AreEqual(300.0, search.MinWidth, 0.01,
+                        "Demo title-bar search should not shrink below the requested 300px resting width.");
                     Assert.AreEqual(475.0, search.MaxWidth, 0.01,
                         "Demo title-bar search should keep the requested 475px expanded cap.");
-                    Assert.AreEqual(230.0, search.ActualWidth, 0.5,
-                        "Demo title-bar search should rest at 230px when not focused.");
+                    Assert.AreEqual(300.0, search.ActualWidth, 0.5,
+                        "Demo title-bar search should rest at 300px when not focused.");
                     Assert.AreEqual(window.ActualWidth / 2.0, GetVisualCenterX(search, window) ?? double.MaxValue, 1.0,
                         "Search should stay horizontally centered in the window.");
-                    Assert.AreEqual((GetVisualCenterY(shellTitleBar, window) ?? double.MinValue) + 2.0, GetVisualCenterY(search, window) ?? double.MaxValue, 1.0,
-                        "Search should sit 2px below the title-bar vertical center.");
+                    Assert.AreEqual((GetVisualCenterY(shellTitleBar, window) ?? double.MinValue) + 4.0, GetVisualCenterY(search, window) ?? double.MaxValue, 1.0,
+                        "Search should sit 4px below the title-bar vertical center.");
 
                     Assert.IsTrue(search.Focus(), "Search should accept keyboard focus.");
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
 
-                    Assert.AreEqual(230.0, search.ActualWidth, 0.5,
+                    Assert.AreEqual(300.0, search.ActualWidth, 0.5,
                         "Demo title-bar search should not expand just because it receives focus.");
                     Assert.AreEqual(window.ActualWidth / 2.0, GetVisualCenterX(search, window) ?? double.MaxValue, 1.0,
                         "Focused search should stay horizontally centered in the window.");
@@ -1546,7 +1590,10 @@ StringComparison.Ordinal, "Rendered C# source should preserve leading indentatio
                 {
                     foreach (DemoPageExpectation expectation in PageExpectations)
                     {
-                        if (expectation.PageType == typeof(GalleryTypographyPage))
+                        // Design-reference catalog pages (Typography, Iconography) render
+                        // directly without DemoSampleControl source samples.
+                        if (expectation.PageType == typeof(GalleryTypographyPage)
+                            || expectation.PageType == typeof(GalleryIconsPage))
                         {
                             continue;
                         }
@@ -2122,7 +2169,7 @@ StringComparison.Ordinal, "Rendered C# source should preserve leading indentatio
                     AssertNextFocus(window, tabOrderSecond, tabOrderThird, "Explicit tab-order group should move from 2 to 3.");
 
                     List<DemoSampleControl> samples = [.. FindAllVisualChildren<DemoSampleControl>(page)];
-                    Assert.AreEqual(4, samples.Count,
+                    Assert.AreEqual(6, samples.Count,
                         "Accessibility page should expose each discrete sample through DemoSampleControl.");
                     Assert.IsTrue(samples.TrueForAll(static sample => !string.IsNullOrWhiteSpace(sample.XamlSource)),
                         "Every accessibility sample should have inline XAML source.");
@@ -2165,19 +2212,28 @@ StringComparison.Ordinal, "Rendered C# source should preserve leading indentatio
                     Assert.IsTrue(list.Items.Count > 100, "Icon catalog must load enough rows to exercise virtualization.");
 
                     WpfBorder? catalogCard = FindByName<WpfBorder>(page, "IconCatalogCard");
-                    Assert.IsNotNull(catalogCard, "Icon catalog should be hosted in a shared card surface.");
-                    Assert.AreEqual(new Thickness(16), catalogCard.Padding,
-                        "Icon catalog card should use the shared demo sample card padding.");
+                    Assert.IsNotNull(catalogCard, "Icon catalog should be hosted in the bordered gallery panel.");
+                    Assert.AreEqual(new Thickness(0), catalogCard.Padding,
+                        "Icon catalog panel should stay flush so the sidebar divider spans its full height.");
                     Assert.AreEqual(new CornerRadius(8), catalogCard.CornerRadius,
-                        "Icon catalog card should use the same 8px corner radius as other demo surfaces.");
+                        "Icon catalog panel should use the same 8px corner radius as other demo surfaces.");
                     Assert.AreEqual(new Thickness(1), catalogCard.BorderThickness,
-                        "Icon catalog card should keep the standard 1px card stroke.");
-                    AssertIconBrush(catalogCard.Background, "CardBackgroundFillColorDefaultBrush",
-                        "Icon catalog card should use the shared section card background.");
+                        "Icon catalog panel should keep the standard 1px stroke.");
+                    AssertIconBrush(catalogCard.Background, "SolidBackgroundFillColorBaseBrush",
+                        "Icon catalog panel should use the WinUI Gallery tile-grid background.");
                     AssertIconBrush(catalogCard.BorderBrush, "CardStrokeColorDefaultBrush",
-                        "Icon catalog card should use the shared card stroke.");
+                        "Icon catalog panel should use the shared card stroke.");
                     Assert.AreEqual(new Thickness(0), list.BorderThickness,
-                        "Icon catalog ListView should let the surrounding card own the stroke.");
+                        "Icon catalog ListView should let the surrounding panel own the stroke.");
+
+                    WpfBorder? detailsPanel = FindByName<WpfBorder>(page, "IconDetailsPanel");
+                    Assert.IsNotNull(detailsPanel, "Icon details sidebar should exist.");
+                    Assert.AreEqual(new Thickness(1, 0, 0, 0), detailsPanel.BorderThickness,
+                        "Icon details sidebar should be separated from the grid by a 1px vertical divider.");
+                    AssertIconBrush(detailsPanel.Background, "CardBackgroundFillColorDefaultBrush",
+                        "Icon details sidebar should use the card background over the panel.");
+                    AssertIconBrush(detailsPanel.BorderBrush, "DividerStrokeColorDefaultBrush",
+                        "Icon details sidebar divider should use the divider stroke token.");
 
                     ScrollViewer? viewer = FindVisualChild<ScrollViewer>(list);
                     Assert.IsNotNull(viewer, "Icon catalog list must own a ScrollViewer.");
